@@ -312,13 +312,13 @@ export default function Home() {
           </p>
 
           <div className="social-list">
-            <a href="#" aria-label="LinkedIn">
+            <a href="https://www.linkedin.com/in/designerazhaf/" target="_blank" rel="noreferrer" aria-label="LinkedIn">
               <Linkedin size={19} /> LinkedIn <ArrowUpRight size={15} />
             </a>
             <a href={whatsapp} target="_blank" rel="noreferrer" aria-label="WhatsApp">
               <MessageCircle size={19} /> WhatsApp <ArrowUpRight size={15} />
             </a>
-            <a href="#" aria-label="Instagram">
+            <a href="https://www.instagram.com/grapeobd/" target="_blank" rel="noreferrer" aria-label="Instagram">
               <Instagram size={19} /> Instagram <ArrowUpRight size={15} />
             </a>
             <a href="https://www.behance.net/azhafahmed" target="_blank" rel="noreferrer" aria-label="Behance">
