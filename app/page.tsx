@@ -322,7 +322,7 @@ export default function Home() {
               <Instagram size={19} /> Instagram <ArrowUpRight size={15} />
             </a>
             <a href="https://www.behance.net/azhafahmed" target="_blank" rel="noreferrer" aria-label="Behance">
-              <Behance size={19} /> Behance <ArrowUpRight size={15} />
+              <Palette size={19} /> Behance <ArrowUpRight size={15} />
             </a>
           </div>
         </div>
