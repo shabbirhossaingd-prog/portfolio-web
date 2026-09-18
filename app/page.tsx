@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   ArrowDown,
   ArrowUpRight,
-  Behance,
+  Palette,
   Instagram,
   Linkedin,
   MessageCircle,
