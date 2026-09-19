@@ -26,6 +26,9 @@ type ProjectRow = {
   category: FolderLabel;
   cover_url?: string | null;
   video_url?: string | null;
+  youtube_url?: string | null;
+  source_url?: string | null;
+  source_kind?: "upload" | "youtube" | "drive" | "direct" | "embed" | null;
   year?: number | null;
   published?: boolean;
   created_at?: string;
@@ -647,6 +650,10 @@ export default function BackendPage() {
                     <div className="admin-recent-thumb">
                       {project.cover_url ? (
                         <img src={project.cover_url} alt="" />
+                      ) : project.source_kind === "youtube" && project.source_url && youtubeIdFromUrl(project.source_url) ? (
+                        <img src={"https://img.youtube.com/vi/" + youtubeIdFromUrl(project.source_url) + "/hqdefault.jpg"} alt="" />
+                      ) : project.source_kind === "drive" && project.source_url && driveThumbnail(project.source_url) ? (
+                        <img src={driveThumbnail(project.source_url)} alt="" />
                       ) : project.video_url ? (
                         <video src={project.video_url} muted preload="metadata" />
                       ) : null}
