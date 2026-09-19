@@ -6,20 +6,15 @@ Personal portfolio for a graphic designer and video editor.
 
 - Monochrome black / white portfolio system
 - Light and dark theme switch
-- Light mode uses the white-shirt hero portrait
-- Dark mode uses the black-shirt hero portrait
-- Soft blur and edge-fade merge around the hero portrait
-- Stylish editorial typography with hover popups
-- Separate Design and Motion portfolio sections
+- Pinterest-inspired filtered portfolio wall
+- Filters for All Work, Posters, Reels, Videos, Logos, Company Profiles and Animations
+- Original media ratios are preserved in the gallery
+- Full-screen original image / video viewer
 - Software showcase for Photoshop, Illustrator, Premiere Pro and After Effects
 - Serial creative journey instead of company / résumé blocks
-- Motion-led icons, cards and micro-interactions
 - Hiring-focused contact form
-- LinkedIn, WhatsApp, Instagram and Behance links
 - Responsive desktop, tablet and mobile layouts
-- Admin dashboard UI at `/admin`
-- YouTube URL parsing foundation for in-site previews
-- Supabase schema foundation for future persistent project uploads
+- Functional admin dashboard at `/admin`
 
 ## Run locally
 
@@ -28,20 +23,36 @@ npm install
 npm run dev
 ```
 
-## Portfolio content
+## Supabase / admin setup
 
-Current artwork cards are temporary monochrome placeholders. They are intentionally ready to be replaced with Shabbir's real posters, logo work, company profiles, motion thumbnails and videos.
+The admin uploader uses Supabase Database + Storage. Large video files are uploaded directly to Supabase through signed upload URLs, so they are not forced through the Next.js server.
 
-## CMS / admin setup
+1. Create or connect a Supabase project.
+2. Copy `.env.example` to `.env.local`.
+3. Add:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `ADMIN_EMAIL`
+   - `ADMIN_PASSWORD`
+   - optional `ADMIN_SESSION_SECRET`
+4. Run `supabase/schema.sql` in the Supabase SQL editor.
+5. Deploy the same environment variables in Vercel.
 
-The admin interface is designed, but persistent authentication, image/video uploads and project CRUD require Supabase credentials.
+The upload API automatically creates a public `portfolio` storage bucket if it does not exist. Files are stored in these folders:
 
-1. Create a Supabase project.
-2. Copy `.env.example` to `.env.local` and add credentials.
-3. Run `supabase/schema.sql` in the Supabase SQL editor.
-4. Create storage buckets for portfolio images and videos.
-5. Connect admin authentication and project CRUD.
-6. Restrict write policies to the owner's authenticated user id.
+- `posters/`
+- `reels/`
+- `videos/`
+- `logos/`
+- `company-profiles/`
+- `animations/`
+
+The admin password is intentionally not committed to GitHub. Keep the real password only in local/Vercel environment variables.
+
+## Admin workflow
+
+Open `/admin`, sign in, select the destination folder, choose the original image or video, and publish. A 9:16 reel remains 9:16, a 4:5 poster remains 4:5, and landscape media remains landscape. The public portfolio applies rounded corners without cropping and opens the original file in full view.
 
 ## Social
 
