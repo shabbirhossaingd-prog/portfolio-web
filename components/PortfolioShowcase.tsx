@@ -133,7 +133,11 @@ function FullMedia({ item }: { item: PortfolioItem }) {
   );
 }
 
-export default function PortfolioShowcase() {
+export default function PortfolioShowcase({
+  content,
+}: {
+  content: { kicker: string; title: string; description: string };
+}) {
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [activeFilter, setActiveFilter] = useState<FilterName>("All Work");
   const [selectedId, setSelectedId] = useState("");
@@ -218,14 +222,11 @@ export default function PortfolioShowcase() {
 
   return (
     <section className="mono-section portfolio-section" id="design">
-      <div className="section-kicker"><span>01</span><span>Selected Work</span></div>
+      <div className="section-kicker"><span>01</span><span>{content.kicker}</span></div>
 
       <div className="section-title-row">
-        <h2>Browse everything.<br />Filter what you need.</h2>
-        <p>
-          A Pinterest-inspired portfolio wall. All Work shows everything; each category button instantly shows every project from that category.
-          Click any piece to open the full poster, reel, video or case-study view.
-        </p>
+        <h2>{content.title.split("\n")[0]}<br />{content.title.split("\n").slice(1).join(" ")}</h2>
+        <p>{content.description}</p>
       </div>
 
       <div className="portfolio-filter-row portfolio-filter-sticky" role="tablist" aria-label="Portfolio categories">
