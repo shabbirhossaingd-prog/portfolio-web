@@ -62,8 +62,8 @@ export async function POST(request: NextRequest) {
     published?: boolean;
   } | null;
 
-  if (!body?.title || !body.category || !(body.category in folderToProject)) {
-    return NextResponse.json({ error: "Title and folder are required." }, { status: 400 });
+  if (!body?.category || !(body.category in folderToProject)) {
+    return NextResponse.json({ error: "Folder is required." }, { status: 400 });
   }
 
   const mediaUrl = body.fileUrl?.trim() || body.sourceUrl?.trim() || "";
@@ -72,7 +72,8 @@ export async function POST(request: NextRequest) {
   }
 
   const mapping = folderToProject[body.category];
-  const baseSlug = slugify(body.title) || "project";
+  const cleanTitle = body.title?.trim() || "";
+  const baseSlug = slugify(cleanTitle || body.category) || "project";
   const slug = baseSlug + "-" + Date.now().toString(36);
 
   try {
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
     const isYouTube = sourceKind === "youtube";
 
     const payload = {
-      title: body.title.trim(),
+      title: cleanTitle,
       slug,
       type: mapping.type,
       category: body.category,
