@@ -3344,3 +3344,25 @@ button, input, select, textarea { font: inherit; }
   font-size: 9px;
   line-height: 1.55;
 }
+
+
+/* Image rendering/performance */
+.hero-portrait-motion {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  transform-origin: center bottom;
+  will-change: transform, opacity;
+}
+
+.hero-portrait-main,
+.hero-portrait-blur,
+.portfolio-pin-media > img,
+.portfolio-full-image {
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.portfolio-pin-media > img {
+  content-visibility: auto;
+}
