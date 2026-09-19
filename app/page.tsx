@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
 import {
   ArrowUpRight,
@@ -147,16 +148,33 @@ export default function Home() {
         </motion.h1>
 
         <div className="hero-portrait-stage">
-          <img className="hero-portrait-blur" src={theme === "dark" ? heroDark : heroLight} alt="" aria-hidden="true" />
-          <motion.img
-            key={theme}
-            className="hero-portrait-main"
+          <Image
+            className="hero-portrait-blur"
             src={theme === "dark" ? heroDark : heroLight}
-            alt="Shabbir Hossain Azhaf"
+            alt=""
+            aria-hidden="true"
+            fill
+            sizes="(max-width: 760px) 92vw, 440px"
+            quality={72}
+          />
+          <motion.div
+            key={theme}
+            className="hero-portrait-motion"
             initial={{ opacity: 0, scale: .985, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: .5 }}
-          />
+          >
+            <Image
+              className="hero-portrait-main"
+              src={theme === "dark" ? heroDark : heroLight}
+              alt="Shabbir Hossain Azhaf"
+              fill
+              priority
+              fetchPriority="high"
+              sizes="(max-width: 760px) 92vw, 440px"
+              quality={96}
+            />
+          </motion.div>
           <div className="portrait-edge-fade" />
           <div className="portrait-mode">
             <button className={theme === "light" ? "active" : ""} onClick={() => changeTheme("light")} aria-pressed={theme === "light"}>White</button>
