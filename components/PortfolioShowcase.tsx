@@ -128,7 +128,15 @@ function PinMedia({ item, index }: { item: PortfolioItem; index: number }) {
   }
 
   if (cover) {
-    return <img src={cover} alt={item.title || category} loading="lazy" />;
+    return (
+      <img
+        src={cover}
+        alt={item.title || category}
+        loading="lazy"
+        decoding="async"
+        fetchPriority="low"
+      />
+    );
   }
 
   return (
@@ -145,7 +153,17 @@ function FullMedia({ item }: { item: PortfolioItem }) {
   if (item.source_kind === "drive" && item.source_url) {
     if (item.type === "design") {
       const image = driveThumb(item.source_url);
-      if (image) return <img className="portfolio-full-image" src={image} alt={item.title || "Portfolio artwork"} />;
+      if (image) {
+        return (
+          <img
+            className="portfolio-full-image"
+            src={image}
+            alt={item.title || "Portfolio artwork"}
+            loading="eager"
+            decoding="async"
+          />
+        );
+      }
     }
 
     const preview = drivePreview(item.source_url);
@@ -188,7 +206,17 @@ function FullMedia({ item }: { item: PortfolioItem }) {
   }
 
   const cover = itemCover(item);
-  if (cover) return <img className="portfolio-full-image" src={cover} alt={item.title} />;
+  if (cover) {
+    return (
+      <img
+        className="portfolio-full-image"
+        src={cover}
+        alt={item.title || "Portfolio artwork"}
+        loading="eager"
+        decoding="async"
+      />
+    );
+  }
 
   return (
     <div className="portfolio-full-empty">
