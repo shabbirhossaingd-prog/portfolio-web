@@ -3797,3 +3797,55 @@ button, input, select, textarea { font: inherit; }
     left: 39%;
   }
 }
+
+
+/* Real-site iframe used by the backend hero editor so preview = website */
+.admin-hero-live-browser {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #d8d8d8;
+  border-radius: 16px;
+  background: #efefec;
+}
+
+.admin-hero-live-browser iframe {
+  display: block;
+  width: 100%;
+  height: min(52vw, 830px);
+  min-height: 620px;
+  border: 0;
+  background: #f4f4f1;
+}
+
+.admin-hero-live-browser > span {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 10;
+  padding: 6px 9px;
+  border: 1px solid rgba(0,0,0,.12);
+  border-radius: 999px;
+  background: rgba(255,255,255,.84);
+  color: #555;
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+  font-size: 8px;
+}
+
+@media (max-width: 900px) {
+  .admin-hero-live-browser iframe {
+    height: 690px;
+    min-height: 690px;
+  }
+}
+
+@media (max-width: 620px) {
+  .admin-hero-live-browser iframe {
+    height: 640px;
+    min-height: 640px;
+  }
+
+  .admin-hero-live-browser > span {
+    display: none;
+  }
+}
