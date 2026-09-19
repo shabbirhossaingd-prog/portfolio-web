@@ -121,6 +121,10 @@ export default function Home() {
 
   const heroLight = siteContent.hero.lightImage || heroLightFallback;
   const heroDark = siteContent.hero.darkImage || heroDarkFallback;
+  const heroScale = theme === "dark" ? (siteContent.hero.darkScale ?? 1.3) : (siteContent.hero.lightScale ?? 1.3);
+  const heroX = theme === "dark" ? (siteContent.hero.darkX ?? 0) : (siteContent.hero.lightX ?? 0);
+  const heroY = theme === "dark" ? (siteContent.hero.darkY ?? 0) : (siteContent.hero.lightY ?? 0);
+  const heroTransform = `translate(${heroX}%, ${heroY}%) scale(${heroScale})`;
 
   return (
     <main className={"mono-page theme-" + theme}>
@@ -164,15 +168,17 @@ export default function Home() {
         </motion.h1>
 
         <div className="hero-portrait-stage">
-          <Image
-            className="hero-portrait-blur"
-            src={theme === "dark" ? heroDark : heroLight}
-            alt=""
-            aria-hidden="true"
-            fill
-            sizes="(max-width: 760px) 92vw, 440px"
-            quality={72}
-          />
+          <div className="hero-portrait-blur-wrap" style={{ transform: heroTransform }}>
+            <Image
+              className="hero-portrait-blur"
+              src={theme === "dark" ? heroDark : heroLight}
+              alt=""
+              aria-hidden="true"
+              fill
+              sizes="(max-width: 760px) 92vw, 440px"
+              quality={72}
+            />
+          </div>
           <motion.div
             key={theme}
             className="hero-portrait-motion"
@@ -180,16 +186,18 @@ export default function Home() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: .5 }}
           >
-            <Image
-              className="hero-portrait-main"
-              src={theme === "dark" ? heroDark : heroLight}
-              alt="Shabbir Hossain Azhaf"
-              fill
-              priority
-              fetchPriority="high"
-              sizes="(max-width: 760px) 92vw, 440px"
-              quality={96}
-            />
+            <div className="hero-portrait-transform" style={{ transform: heroTransform }}>
+              <Image
+                className="hero-portrait-main"
+                src={theme === "dark" ? heroDark : heroLight}
+                alt="Shabbir Hossain Azhaf"
+                fill
+                priority
+                fetchPriority="high"
+                sizes="(max-width: 760px) 92vw, 440px"
+                quality={96}
+              />
+            </div>
           </motion.div>
           <div className="portrait-edge-fade" />
           <div className="portrait-mode">
