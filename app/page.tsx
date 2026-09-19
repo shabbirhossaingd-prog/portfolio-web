@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowUpRight,
@@ -41,6 +41,12 @@ const faqs = [
   ["Can you work remotely?", "Yes. I am based in Dhaka, Bangladesh and work with remote projects and collaborations."],
 ];
 
+function scrollToId(event: MouseEvent<HTMLAnchorElement>, id: string) {
+  event.preventDefault();
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  window.history.replaceState(null, "", window.location.pathname + window.location.search);
+}
+
 function Tip({ children, text, className = "" }: { children: ReactNode; text: string; className?: string }) {
   return <span className={"hover-tip " + className} data-tip={text}>{children}</span>;
 }
@@ -50,6 +56,10 @@ export default function Home() {
   const [openFaq, setOpenFaq] = useState(0);
 
   useEffect(() => {
+    if (window.location.hash) {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+
     const saved = window.localStorage.getItem("portfolio-theme");
     if (saved === "dark" || saved === "light") {
       setTheme(saved);
@@ -66,12 +76,12 @@ export default function Home() {
   return (
     <main className={"mono-page theme-" + theme}>
       <header className="mono-nav">
-        <a href="#home" className="mono-name"><Tip text="Graphic Designer · Video Editor">Shabbir Azhaf</Tip></a>
+        <a href="/" onClick={(event) => scrollToId(event, "home")} className="mono-name"><Tip text="Graphic Designer · Video Editor">Shabbir Azhaf</Tip></a>
         <nav>
-          <a href="#design"><Tip text="Posters, reels, video, logos and motion">Work</Tip></a>
-          <a href="#software"><Tip text="Creative toolkit">Software</Tip></a>
-          <a href="#about"><Tip text="Creative journey">Journey</Tip></a>
-          <a href="#contact"><Tip text="Hiring & project inquiry">Contact</Tip></a>
+          <a href="/" onClick={(event) => scrollToId(event, "design")}><Tip text="Posters, reels, video, logos and motion">Work</Tip></a>
+          <a href="/" onClick={(event) => scrollToId(event, "software")}><Tip text="Creative toolkit">Software</Tip></a>
+          <a href="/" onClick={(event) => scrollToId(event, "about")}><Tip text="Creative journey">Journey</Tip></a>
+          <a href="/" onClick={(event) => scrollToId(event, "contact")}><Tip text="Hiring & project inquiry">Contact</Tip></a>
         </nav>
         <div className="nav-actions">
           <div className="theme-switch" aria-label="Theme selector">
@@ -82,7 +92,7 @@ export default function Home() {
               <Moon size={14} />
             </button>
           </div>
-          <a href="#contact" className="mono-pill">Hire Me <ArrowUpRight size={14} /></a>
+          <a href="/" onClick={(event) => scrollToId(event, "contact")} className="mono-pill">Hire Me <ArrowUpRight size={14} /></a>
         </div>
       </header>
 
@@ -130,7 +140,7 @@ export default function Home() {
             </Tip>
           </p>
           <div className="hero-links">
-            <a href="#design">Explore work <ArrowUpRight size={15} /></a>
+            <a href="/" onClick={(event) => scrollToId(event, "design")}>Explore work <ArrowUpRight size={15} /></a>
             <a href="mailto:shabbirhossain.gd@gmail.com">Email me <Mail size={15} /></a>
           </div>
         </div>
@@ -225,7 +235,7 @@ export default function Home() {
 
       <footer className="mono-footer">
         <div><strong>Shabbir Hossain Azhaf</strong><span>Graphic Designer / Video Editor</span></div>
-        <div><a href="#design">Work</a><a href="#software">Software</a><a href="#about">Journey</a><a href="#contact">Contact</a></div>
+        <div><a href="/" onClick={(event) => scrollToId(event, "design")}>Work</a><a href="/" onClick={(event) => scrollToId(event, "software")}>Software</a><a href="/" onClick={(event) => scrollToId(event, "about")}>Journey</a><a href="/" onClick={(event) => scrollToId(event, "contact")}>Contact</a></div>
         <span>© 2026</span>
       </footer>
     </main>
