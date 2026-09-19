@@ -33,3 +33,25 @@ using (published = true);
 
 -- Authenticated admin write policies should be restricted to the portfolio owner's
 -- Supabase user id during deployment. Do not enable broad anonymous writes.
+
+
+-- Editable public portfolio copy. Writes happen only through the authenticated
+-- backend API with the service-role key; visitors can only read it.
+create table if not exists public.site_content (
+  key text primary key,
+  value jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.site_content enable row level security;
+
+create policy "Public can read site content"
+on public.site_content
+for select
+using (true);
+
+
+alter table public.projects drop constraint if exists projects_category_check;
+alter table public.projects
+  add constraint projects_category_check
+  check (category in ('Posters','Reels','Videos','AI Video','Logos','Company Profiles','Animations'));
