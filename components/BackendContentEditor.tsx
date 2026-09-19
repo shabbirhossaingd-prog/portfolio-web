@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { Check, LoaderCircle, Plus, Save, Sparkles, Trash2, Upload } from "lucide-react";
+import { Check, ExternalLink, LoaderCircle, Plus, RotateCcw, Save, Sparkles, Trash2, Upload } from "lucide-react";
 import {
   defaultSiteContent,
   type SiteContent,
@@ -73,6 +73,8 @@ export default function BackendContentEditor() {
   const [content, setContent] = useState<SiteContent>(defaultSiteContent);
   const [busy, setBusy] = useState(false);
   const [heroBusy, setHeroBusy] = useState<"light" | "dark" | null>(null);
+  const [heroPreviewMode, setHeroPreviewMode] = useState<"light" | "dark">("light");
+  const [framingBusy, setFramingBusy] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -147,6 +149,38 @@ export default function BackendContentEditor() {
     }
   }
 
+  function setHeroFrame(mode: "light" | "dark", patch: { scale?: number; x?: number; y?: number }) {
+    setContent((prev) => {
+      const hero = { ...prev.hero };
+      if (mode === "light") {
+        if (patch.scale !== undefined) hero.lightScale = patch.scale;
+        if (patch.x !== undefined) hero.lightX = patch.x;
+        if (patch.y !== undefined) hero.lightY = patch.y;
+      } else {
+        if (patch.scale !== undefined) hero.darkScale = patch.scale;
+        if (patch.x !== undefined) hero.darkX = patch.x;
+        if (patch.y !== undefined) hero.darkY = patch.y;
+      }
+      return { ...prev, hero };
+    });
+  }
+
+  function resetHeroFrame(mode: "light" | "dark") {
+    setHeroFrame(mode, { scale: 1.3, x: 0, y: 0 });
+  }
+
+  async function saveHeroFraming() {
+    setFramingBusy(true);
+    setMessage("");
+    try {
+      await saveContent(content, "Homepage photo framing updated.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not save photo framing.");
+    } finally {
+      setFramingBusy(false);
+    }
+  }
+
   async function save() {
     setBusy(true);
     setMessage("");
@@ -193,7 +227,7 @@ export default function BackendContentEditor() {
       </div>
 
       <div className="admin-content-grid">
-        <div className="admin-content-card">
+        <div className="admin-content-card admin-hero-editor-card">
           <h3>Hero</h3>
           <label>Status<input value={content.hero.status} onChange={(e) => setContent({ ...content, hero: { ...content.hero, status: e.target.value } })} /></label>
           <label>Location<input value={content.hero.location} onChange={(e) => setContent({ ...content, hero: { ...content.hero, location: e.target.value } })} /></label>
@@ -251,7 +285,100 @@ export default function BackendContentEditor() {
             </div>
           </div>
 
-          <small>Just choose the photo. No code, crop or optimization needed. Transparent PNG is supported.</small>
+          <small>Just choose the photo. No code needed. Transparent PNG is supported.</small>
+
+          <div className="admin-hero-studio">
+            <div className="admin-hero-studio-head">
+              <div>
+                <strong>Live homepage preview</strong>
+                <span>Zoom, crop and move the photo here before saving.</span>
+              </div>
+              <div className="admin-hero-preview-switch">
+                <button type="button" className={heroPreviewMode === "light" ? "active" : ""} onClick={() => setHeroPreviewMode("light")}>White</button>
+                <button type="button" className={heroPreviewMode === "dark" ? "active" : ""} onClick={() => setHeroPreviewMode("dark")}>Black</button>
+              </div>
+            </div>
+
+            {(() => {
+              const mode = heroPreviewMode;
+              const image = mode === "light"
+                ? (content.hero.lightImage || "/hero-light.webp")
+                : (content.hero.darkImage || "/hero-dark.webp");
+              const scale = mode === "light" ? (content.hero.lightScale ?? 1.3) : (content.hero.darkScale ?? 1.3);
+              const x = mode === "light" ? (content.hero.lightX ?? 0) : (content.hero.darkX ?? 0);
+              const y = mode === "light" ? (content.hero.lightY ?? 0) : (content.hero.darkY ?? 0);
+              const transform = `translate(${x}%, ${y}%) scale(${scale})`;
+
+              return (
+                <>
+                  <div className={"admin-hero-live " + mode}>
+                    <div className="admin-hero-live-copy">
+                      <strong>Visuals with clarity.</strong>
+                      <em>Motion with character.</em>
+                    </div>
+                    <div className="admin-hero-live-blur" style={{ transform }}>
+                      <img src={image} alt="" aria-hidden="true" />
+                    </div>
+                    <div className="admin-hero-live-main" style={{ transform }}>
+                      <img src={image} alt={mode + " mode homepage preview"} />
+                    </div>
+                    <div className="admin-hero-live-fade" />
+                  </div>
+
+                  <div className="admin-hero-controls">
+                    <label>
+                      <span><b>Zoom / Crop</b><i>{Math.round(scale * 100)}%</i></span>
+                      <input
+                        type="range"
+                        min="0.8"
+                        max="1.8"
+                        step="0.02"
+                        value={scale}
+                        onChange={(event) => setHeroFrame(mode, { scale: Number(event.target.value) })}
+                      />
+                    </label>
+
+                    <label>
+                      <span><b>Move left / right</b><i>{x}%</i></span>
+                      <input
+                        type="range"
+                        min="-30"
+                        max="30"
+                        step="1"
+                        value={x}
+                        onChange={(event) => setHeroFrame(mode, { x: Number(event.target.value) })}
+                      />
+                    </label>
+
+                    <label>
+                      <span><b>Move up / down</b><i>{y}%</i></span>
+                      <input
+                        type="range"
+                        min="-30"
+                        max="30"
+                        step="1"
+                        value={y}
+                        onChange={(event) => setHeroFrame(mode, { y: Number(event.target.value) })}
+                      />
+                    </label>
+
+                    <div className="admin-hero-control-actions">
+                      <button type="button" className="admin-secondary" onClick={() => resetHeroFrame(mode)}>
+                        <RotateCcw size={15} /> Reset
+                      </button>
+                      <button type="button" className="admin-primary" onClick={saveHeroFraming} disabled={framingBusy}>
+                        {framingBusy ? <LoaderCircle className="spin" size={15} /> : <Save size={15} />}
+                        {framingBusy ? "Saving…" : "Apply framing"}
+                      </button>
+                      <a className="admin-secondary" href="/" target="_blank" rel="noreferrer">
+                        Live site <ExternalLink size={14} />
+                      </a>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
         </div>
 
         <div className="admin-content-card">
