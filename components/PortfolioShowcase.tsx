@@ -18,6 +18,8 @@ type PortfolioItem = {
   gallery_urls?: string[] | null;
   video_url?: string | null;
   youtube_url?: string | null;
+  source_url?: string | null;
+  source_kind?: "upload" | "youtube" | "drive" | "direct" | "embed" | null;
   year?: number | string | null;
   sort_order?: number | null;
 };
@@ -69,7 +71,30 @@ function youtubeThumb(url?: string | null) {
   return id ? "https://img.youtube.com/vi/" + id + "/hqdefault.jpg" : null;
 }
 
+function driveFileId(url?: string | null) {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    const pathId = parsed.pathname.match(/\/file\/d\/([^/]+)/)?.[1];
+    return pathId || parsed.searchParams.get("id");
+  } catch {
+    return null;
+  }
+}
+
+function drivePreview(url?: string | null) {
+  const id = driveFileId(url);
+  return id ? "https://drive.google.com/file/d/" + id + "/preview" : null;
+}
+
+function driveThumb(url?: string | null) {
+  const id = driveFileId(url);
+  return id ? "https://drive.google.com/thumbnail?id=" + id + "&sz=w1200" : null;
+}
+
 function itemCover(item: PortfolioItem) {
+  if (item.source_kind === "drive") return driveThumb(item.source_url);
+  if (item.source_kind === "youtube") return youtubeThumb(item.source_url || item.youtube_url);
   return item.cover_url || item.gallery_urls?.[0] || youtubeThumb(item.youtube_url) || null;
 }
 
@@ -102,13 +127,28 @@ function PinMedia({ item, index }: { item: PortfolioItem; index: number }) {
 }
 
 function FullMedia({ item }: { item: PortfolioItem }) {
-  const videoId = youtubeId(item.youtube_url);
+  const videoId = youtubeId(item.source_url || item.youtube_url);
+
+  if (item.source_kind === "drive" && item.source_url) {
+    const preview = drivePreview(item.source_url);
+    if (preview) {
+      return (
+        <iframe
+          className="portfolio-full-drive"
+          src={preview}
+          title={item.title}
+          allow="autoplay; encrypted-media; picture-in-picture"
+          allowFullScreen
+        />
+      );
+    }
+  }
 
   if (videoId) {
     return (
       <iframe
         className="portfolio-full-youtube"
-        src={"https://www.youtube.com/embed/" + videoId + "?autoplay=1&rel=0"}
+        src={"https://www.youtube.com/embed/" + videoId + "?autoplay=1&controls=1&rel=0"}
         title={item.title}
         allow="autoplay; encrypted-media; picture-in-picture"
         allowFullScreen
@@ -117,7 +157,16 @@ function FullMedia({ item }: { item: PortfolioItem }) {
   }
 
   if (item.video_url) {
-    return <video className="portfolio-full-video" src={item.video_url} controls autoPlay playsInline />;
+    return (
+      <video
+        className="portfolio-full-video"
+        src={item.video_url}
+        controls
+        autoPlay
+        playsInline
+        preload="metadata"
+      />
+    );
   }
 
   const cover = itemCover(item);
@@ -151,7 +200,7 @@ export default function PortfolioShowcase({
 
       const { data, error } = await supabase
         .from("projects")
-        .select("id,title,slug,type,category,description,cover_url,gallery_urls,video_url,youtube_url,year,sort_order")
+        .select("id,title,slug,type,category,description,cover_url,gallery_urls,video_url,youtube_url,source_url,source_kind,year,sort_order")
         .eq("published", true)
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false });
