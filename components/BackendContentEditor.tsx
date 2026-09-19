@@ -130,6 +130,28 @@ export default function BackendContentEditor() {
 
       <div className="admin-content-list">
         <div className="admin-content-list-head">
+          <div><span>Software</span><h3>Creative tools</h3></div>
+          <button type="button" onClick={() => setContent((prev) => ({ ...prev, tools: [...prev.tools, { code: "", name: "", use: "", icon: "sparkles" }] }))}><Plus size={15} /> Add tool</button>
+        </div>
+
+        {content.tools.map((item, index) => (
+          <div className="admin-content-row tool" key={index}>
+            <input placeholder="Code" value={item.code} onChange={(e) => updateTool(index, { code: e.target.value })} />
+            <input placeholder="Tool name" value={item.name} onChange={(e) => updateTool(index, { name: e.target.value })} />
+            <input placeholder="How you use it" value={item.use} onChange={(e) => updateTool(index, { use: e.target.value })} />
+            <select value={item.icon} onChange={(e) => updateTool(index, { icon: e.target.value as SiteTool["icon"] })}>
+              <option value="image">Image</option>
+              <option value="pen">Pen</option>
+              <option value="video">Video</option>
+              <option value="sparkles">Sparkles</option>
+            </select>
+            <button type="button" className="admin-icon-button" onClick={() => setContent((prev) => ({ ...prev, tools: prev.tools.filter((_, i) => i !== index) }))}><Trash2 size={15} /></button>
+          </div>
+        ))}
+      </div>
+
+      <div className="admin-content-list">
+        <div className="admin-content-list-head">
           <div><span>Career</span><h3>Work experience</h3></div>
           <button type="button" onClick={() => setContent((prev) => ({ ...prev, experience: [...prev.experience, { company: "", role: "", period: "", current: false, note: "" }] }))}><Plus size={15} /> Add experience</button>
         </div>
