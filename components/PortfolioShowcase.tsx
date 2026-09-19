@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft, ArrowRight, Maximize2, Play, X } from "lucide-react";
 
-type FilterName = "All Work" | "Posters" | "Reels" | "Videos" | "Logos" | "Company Profiles" | "Animations";
+type FilterName = "All Work" | "Posters" | "Reels" | "Videos" | "AI Video" | "Logos" | "Company Profiles" | "Animations";
 
 type PortfolioItem = {
   id: string;
@@ -27,6 +27,7 @@ const filters: FilterName[] = [
   "Posters",
   "Reels",
   "Videos",
+  "AI Video",
   "Logos",
   "Company Profiles",
   "Animations",
@@ -40,6 +41,7 @@ const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabase
 function resolveFilter(item: PortfolioItem): Exclude<FilterName, "All Work"> {
   const text = (item.category + " " + item.title).toLowerCase();
 
+  if (/ai video|generative video|ai-generated/.test(text)) return "AI Video";
   if (/reel|short[- ]?form|social video/.test(text)) return "Reels";
   if (/animation|motion|after effects|kinetic/.test(text)) return "Animations";
   if (/company profile|profile|editorial|brochure|corporate/.test(text)) return "Company Profiles";
