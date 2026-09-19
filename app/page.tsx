@@ -54,6 +54,12 @@ function Tip({ children, text, className = "" }: { children: ReactNode; text: st
 export default function Home() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [siteContent, setSiteContent] = useState<SiteContent>(defaultSiteContent);
+  const [heroPreviewFrame, setHeroPreviewFrame] = useState<{
+    mode: "light" | "dark";
+    scale: number;
+    x: number;
+    y: number;
+  } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -106,6 +112,12 @@ export default function Home() {
       window.history.replaceState(null, "", window.location.pathname + window.location.search);
     }
 
+    const previewMode = new URLSearchParams(window.location.search).get("heroPreview") === "1";
+    if (previewMode) {
+      setTheme("light");
+      return;
+    }
+
     const saved = window.localStorage.getItem("portfolio-theme");
     if (saved === "dark" || saved === "light") {
       setTheme(saved);
@@ -119,11 +131,41 @@ export default function Home() {
     window.localStorage.setItem("portfolio-theme", value);
   };
 
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("heroPreview") !== "1") return;
+
+    const handlePreviewMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data as {
+        type?: string;
+        mode?: "light" | "dark";
+        scale?: number;
+        x?: number;
+        y?: number;
+      };
+
+      if (data?.type !== "portfolio-hero-preview") return;
+      if (data.mode !== "light" && data.mode !== "dark") return;
+
+      const scale = Number(data.scale);
+      const x = Number(data.x);
+      const y = Number(data.y);
+      if (![scale, x, y].every(Number.isFinite)) return;
+
+      setTheme(data.mode);
+      setHeroPreviewFrame({ mode: data.mode, scale, x, y });
+    };
+
+    window.addEventListener("message", handlePreviewMessage);
+    window.parent?.postMessage({ type: "portfolio-hero-preview-ready" }, window.location.origin);
+    return () => window.removeEventListener("message", handlePreviewMessage);
+  }, []);
+
   const heroLight = siteContent.hero.lightImage || heroLightFallback;
   const heroDark = siteContent.hero.darkImage || heroDarkFallback;
-  const heroScale = theme === "dark" ? (siteContent.hero.darkScale ?? 1.3) : (siteContent.hero.lightScale ?? 1.3);
-  const heroX = theme === "dark" ? (siteContent.hero.darkX ?? 0) : (siteContent.hero.lightX ?? 0);
-  const heroY = theme === "dark" ? (siteContent.hero.darkY ?? 0) : (siteContent.hero.lightY ?? 0);
+  const heroScale = heroPreviewFrame?.scale ?? (theme === "dark" ? (siteContent.hero.darkScale ?? 1.3) : (siteContent.hero.lightScale ?? 1.3));
+  const heroX = heroPreviewFrame?.x ?? (theme === "dark" ? (siteContent.hero.darkX ?? 0) : (siteContent.hero.lightX ?? 0));
+  const heroY = heroPreviewFrame?.y ?? (theme === "dark" ? (siteContent.hero.darkY ?? 0) : (siteContent.hero.lightY ?? 0));
   const heroTransform = `translate(${heroX}%, ${heroY}%) scale(${heroScale})`;
 
   return (
