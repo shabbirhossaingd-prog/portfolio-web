@@ -73,6 +73,10 @@ export default function BackendPage() {
   const [status, setStatus] = useState("");
   const [projects, setProjects] = useState<ProjectRow[]>([]);
 
+  const linkedPreview = linkUrl.trim() ? normalizedPreviewUrl(linkUrl.trim()) : "";
+  const linkedSourceKind = linkUrl.trim() ? sourceKindFromUrl(linkUrl.trim()) : null;
+  const linkedDriveThumb = linkedSourceKind === "drive" ? driveThumbnail(linkUrl.trim()) : "";
+
   const selectedFolder = useMemo(
     () => folders.find((item) => item.label === folder) || folders[0],
     [folder],
@@ -530,6 +534,26 @@ export default function BackendPage() {
                 />
               </label>
 
+              <div className="admin-link-source">
+                <span className="admin-link-divider">or paste a link</span>
+                <label>
+                  Media link
+                  <input
+                    type="url"
+                    value={linkUrl}
+                    onChange={(event) => {
+                      setLinkUrl(event.target.value);
+                      if (event.target.value) setFile(null);
+                      setStatus("");
+                    }}
+                    placeholder="Paste Drive, YouTube or direct media link"
+                  />
+                </label>
+                <small>
+                  Google Drive, YouTube, direct image/video URLs are shown inside your website. Drive files must be shared as “Anyone with the link”.
+                </small>
+              </div>
+
               <label className="upload-box admin-real-upload">
                 <Upload size={22} />
                 <strong>{file ? file.name : selectedFolder.kind === "video" ? "Choose original video" : "Choose original artwork"}</strong>
@@ -544,7 +568,12 @@ export default function BackendPage() {
                 <input
                   type="file"
                   accept={selectedFolder.kind === "video" ? "video/*,.mp4,.webm,.mov,.m4v,.ogg,.ogv" : "image/*,.jpg,.jpeg,.png,.webp,.gif,.avif"}
-                  onChange={(event) => setFile(event.target.files?.[0] || null)}
+                  onChange={(event) => {
+                    const nextFile = event.target.files?.[0] || null;
+                    setFile(nextFile);
+                    if (nextFile) setLinkUrl("");
+                    setStatus("");
+                  }}
                 />
               </label>
             </div>
@@ -580,10 +609,27 @@ export default function BackendPage() {
                   ) : (
                     <img src={previewUrl} alt="Upload preview" />
                   )
+                ) : linkedPreview ? (
+                  linkedSourceKind === "youtube" || linkedSourceKind === "drive" ? (
+                    selectedFolder.kind === "image" && linkedDriveThumb ? (
+                      <img src={linkedDriveThumb} alt="Linked media preview" />
+                    ) : (
+                      <iframe
+                        src={linkedPreview}
+                        title="Linked media preview"
+                        allow="autoplay; encrypted-media; picture-in-picture"
+                        allowFullScreen
+                      />
+                    )
+                  ) : selectedFolder.kind === "video" ? (
+                    <video src={linkedPreview} controls playsInline preload="metadata" />
+                  ) : (
+                    <img src={linkedPreview} alt="Linked media preview" />
+                  )
                 ) : (
                   <div className="admin-preview-empty">
                     {selectedFolder.kind === "video" ? <Film size={25} /> : <ImageIcon size={25} />}
-                    <span>Your original media preview appears here.</span>
+                    <span>Upload a file or paste a media link to preview it here.</span>
                   </div>
                 )}
               </div>
