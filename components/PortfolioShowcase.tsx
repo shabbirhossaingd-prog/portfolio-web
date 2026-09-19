@@ -371,15 +371,11 @@ export default function PortfolioShowcase({
                     <span className="portfolio-pin-open"><Maximize2 size={15} /> View</span>
                   </button>
 
-                  <div className="portfolio-pin-meta">
-                    <div>
-                      <span>{resolveFilter(item)}{item.year ? " · " + item.year : ""}</span>
-                      {item.title && <h3>{item.title}</h3>}
+                  {item.title && (
+                    <div className="portfolio-pin-title-overlay">
+                      <span>{item.title}</span>
                     </div>
-                    <button type="button" onClick={() => openItem(item)} aria-label={item.title ? "Open " + item.title : "Open portfolio item"}>
-                      <Maximize2 size={15} />
-                    </button>
-                  </div>
+                  )}
                 </motion.article>
               );
             })}
