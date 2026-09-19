@@ -9,6 +9,7 @@ const folders = new Set([
   "posters",
   "reels",
   "videos",
+  "ai-video",
   "logos",
   "company-profiles",
   "animations",
