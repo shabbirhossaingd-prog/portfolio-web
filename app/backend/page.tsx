@@ -48,8 +48,8 @@ const folders: Array<{
   { label: "Animations", slug: "animations", kind: "video" },
 ];
 
-const publicUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const publicAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const publicUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://bgrpvjuvghdjbxmljtgm.supabase.co";
+const publicAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_WheOVPSgKqPTXiHuD1uhXA_S4Vubljo";
 const browserSupabase =
   publicUrl && publicAnonKey ? createClient(publicUrl, publicAnonKey) : null;
 
