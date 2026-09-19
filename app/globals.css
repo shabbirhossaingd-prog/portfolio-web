@@ -1766,7 +1766,7 @@ button, input, select, textarea { font: inherit; }
 
 .portfolio-pin {
   width: 100%;
-  margin: 0 0 22px;
+  margin: 0 0 10px;
   break-inside: avoid;
   display: inline-block;
   vertical-align: top;
@@ -1965,7 +1965,7 @@ button, input, select, textarea { font: inherit; }
   }
 
   .portfolio-pin {
-    margin-bottom: 18px;
+    margin-bottom: 10px;
   }
 
   .portfolio-pin-media {
@@ -1994,7 +1994,7 @@ button, input, select, textarea { font: inherit; }
   }
 
   .portfolio-pin {
-    margin-bottom: 15px;
+    margin-bottom: 8px;
   }
 
   .portfolio-pin-media {
@@ -3365,4 +3365,29 @@ button, input, select, textarea { font: inherit; }
 
 .portfolio-pin-media > img {
   content-visibility: auto;
+}
+
+
+.portfolio-pin-title-overlay {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 3;
+  max-width: calc(100% - 120px);
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(12,12,12,.62);
+  color: #fff;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+
+.portfolio-pin-title-overlay span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 9px;
+  font-weight: 650;
 }
