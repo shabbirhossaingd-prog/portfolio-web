@@ -184,7 +184,7 @@ export default function Home() {
         <div className="section-kicker"><span>02</span><span>{siteContent.profile.kicker}</span></div>
 
         <div className="profile-intro">
-          <h2>{siteContent.profile.title.split("\\n")[0]}<br /><em>{siteContent.profile.title.split("\\n").slice(1).join(" ")}</em></h2>
+          <h2>{siteContent.profile.title.split("\n")[0]}<br /><em>{siteContent.profile.title.split("\n").slice(1).join(" ")}</em></h2>
           <p>{siteContent.profile.description}</p>
         </div>
 
@@ -312,7 +312,7 @@ export default function Home() {
       <section className="mono-contact" id="contact">
         <div className="contact-copy">
           <div className="section-kicker invert"><span>03</span><Tip text="Freelance · Collaboration · Full-time">{siteContent.contact.kicker}</Tip></div>
-          <h2>{siteContent.contact.title.split("\\n")[0]}<br />{siteContent.contact.title.split("\\n")[1]}<br /><em>{siteContent.contact.title.split("\\n").slice(2).join(" ")}</em></h2>
+          <h2>{siteContent.contact.title.split("\n")[0]}<br />{siteContent.contact.title.split("\n")[1]}<br /><em>{siteContent.contact.title.split("\n").slice(2).join(" ")}</em></h2>
           <p>{siteContent.contact.description}</p>
 
           <div className="social-row">
