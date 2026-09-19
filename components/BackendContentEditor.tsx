@@ -123,7 +123,7 @@ export default function BackendContentEditor() {
           <h3>Skills</h3>
           <label>Core skills<input value={csv(content.coreSkills)} onChange={(e) => setContent({ ...content, coreSkills: fromCsv(e.target.value) })} /></label>
           <label>AI skills<input value={csv(content.aiSkills)} onChange={(e) => setContent({ ...content, aiSkills: fromCsv(e.target.value) })} /></label>
-          <small>Comma separated. Example: GPT, Gemini, Freepik, Envato, Cloud, Antigravity</small>
+          <small>Comma separated. Example: GPT, Gemini, Google Flow, Freepik, Envato, Cloud, Antigravity, Vibe Coding</small>
         </div>
 
         <div className="admin-content-card">
