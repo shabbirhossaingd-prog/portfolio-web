@@ -107,6 +107,13 @@ export default function BackendContentEditor() {
         </div>
 
         <div className="admin-content-card">
+          <h3>Portfolio section</h3>
+          <label>Kicker<input value={content.portfolio.kicker} onChange={(e) => setContent({ ...content, portfolio: { ...content.portfolio, kicker: e.target.value } })} /></label>
+          <label>Title<textarea rows={3} value={content.portfolio.title} onChange={(e) => setContent({ ...content, portfolio: { ...content.portfolio, title: e.target.value } })} /></label>
+          <label>Description<textarea rows={4} value={content.portfolio.description} onChange={(e) => setContent({ ...content, portfolio: { ...content.portfolio, description: e.target.value } })} /></label>
+        </div>
+
+        <div className="admin-content-card">
           <h3>Skills</h3>
           <label>Core skills<input value={csv(content.coreSkills)} onChange={(e) => setContent({ ...content, coreSkills: fromCsv(e.target.value) })} /></label>
           <label>AI skills<input value={csv(content.aiSkills)} onChange={(e) => setContent({ ...content, aiSkills: fromCsv(e.target.value) })} /></label>
