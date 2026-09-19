@@ -84,7 +84,8 @@ const experience = [
 const education = [
   { title: "Graphic Design", place: "Creative IT Institute", meta: "2022 — 2023 · 8-month training" },
   { title: "Video Editing", place: "Creative IT Institute", meta: "2024 · 4-month course" },
-  { title: "BBA · Marketing", place: "Tejgaon College", meta: "2023 — Present" },
+  { title: "College", place: "Tejgaon College", meta: "Academic background" },
+  { title: "BBA · Marketing", place: "Sonargaon University", meta: "2023 — Present" },
 ];
 
 function scrollToId(event: MouseEvent<HTMLAnchorElement>, id: string) {
