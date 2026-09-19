@@ -365,6 +365,7 @@ export default function BackendPage() {
           .from(signed.bucket)
           .uploadToSignedUrl(signed.path, signed.token, file, {
             contentType: inferredContentType(file),
+            cacheControl: "31536000",
           });
 
         if (uploadError) throw uploadError;
