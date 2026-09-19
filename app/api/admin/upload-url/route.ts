@@ -31,12 +31,19 @@ async function ensurePortfolioBucket() {
   if (!data || error) {
     const { error: createError } = await supabase.storage.createBucket("portfolio", {
       public: true,
-      fileSizeLimit: "500MB",
+      fileSizeLimit: 524288000,
     });
 
     if (createError && !createError.message.toLowerCase().includes("already exists")) {
       throw createError;
     }
+  } else if (!data.public) {
+    const { error: updateError } = await supabase.storage.updateBucket("portfolio", {
+      public: true,
+      fileSizeLimit: 524288000,
+    });
+
+    if (updateError) throw updateError;
   }
 
   return supabase;
