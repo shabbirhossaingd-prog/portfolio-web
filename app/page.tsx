@@ -27,8 +27,8 @@ import ContactForm from "@/components/ContactForm";
 import PortfolioShowcase from "@/components/PortfolioShowcase";
 import { defaultSiteContent, type SiteContent } from "@/lib/site-content";
 
-const heroLight = "/hero-light.webp";
-const heroDark = "/hero-dark.webp";
+const heroLightFallback = "/hero-light.webp";
+const heroDarkFallback = "/hero-dark.webp";
 
 const publicUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://bgrpvjuvghdjbxmljtgm.supabase.co";
 const publicAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_WheOVPSgKqPTXiHuD1uhXA_S4Vubljo";
@@ -67,7 +67,20 @@ export default function Home() {
         .maybeSingle();
 
       if (!cancelled && !error && data?.value) {
-        setSiteContent(data.value as SiteContent);
+        const value = data.value as Partial<SiteContent>;
+        setSiteContent({
+          ...defaultSiteContent,
+          ...value,
+          hero: { ...defaultSiteContent.hero, ...(value.hero || {}) },
+          portfolio: { ...defaultSiteContent.portfolio, ...(value.portfolio || {}) },
+          profile: { ...defaultSiteContent.profile, ...(value.profile || {}) },
+          contact: { ...defaultSiteContent.contact, ...(value.contact || {}) },
+          tools: value.tools || defaultSiteContent.tools,
+          coreSkills: value.coreSkills || defaultSiteContent.coreSkills,
+          aiSkills: value.aiSkills || defaultSiteContent.aiSkills,
+          experience: value.experience || defaultSiteContent.experience,
+          education: value.education || defaultSiteContent.education,
+        });
       }
     }
 
@@ -105,6 +118,9 @@ export default function Home() {
     setTheme(value);
     window.localStorage.setItem("portfolio-theme", value);
   };
+
+  const heroLight = siteContent.hero.lightImage || heroLightFallback;
+  const heroDark = siteContent.hero.darkImage || heroDarkFallback;
 
   return (
     <main className={"mono-page theme-" + theme}>
