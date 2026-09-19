@@ -170,6 +170,14 @@ export default function BackendPage() {
     return "direct";
   }
 
+  function driveResourceKey(value: string) {
+    try {
+      return new URL(value).searchParams.get("resourcekey") || "";
+    } catch {
+      return "";
+    }
+  }
+
   function normalizedPreviewUrl(value: string) {
     const sourceKind = sourceKindFromUrl(value);
     if (sourceKind === "youtube") {
@@ -178,14 +186,19 @@ export default function BackendPage() {
     }
     if (sourceKind === "drive") {
       const id = driveFileId(value);
-      return id ? "https://drive.google.com/file/d/" + id + "/preview" : value;
+      const resourceKey = driveResourceKey(value);
+      return id
+        ? "https://drive.google.com/file/d/" + id + "/preview" + (resourceKey ? "?resourcekey=" + encodeURIComponent(resourceKey) : "")
+        : "";
     }
     return value;
   }
 
   function driveThumbnail(value: string) {
     const id = driveFileId(value);
-    return id ? "https://drive.google.com/thumbnail?id=" + id + "&sz=w1200" : "";
+    if (!id) return "";
+    const resourceKey = driveResourceKey(value);
+    return "https://drive.google.com/thumbnail?id=" + id + "&sz=w2000" + (resourceKey ? "&resourcekey=" + encodeURIComponent(resourceKey) : "");
   }
 
   function openPanel(panel: "dashboard" | "visual" | "video") {
