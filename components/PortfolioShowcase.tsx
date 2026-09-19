@@ -94,6 +94,18 @@ function PinMedia({ item, index }: { item: PortfolioItem; index: number }) {
   const cover = itemCover(item);
   const category = resolveFilter(item);
 
+  if (item.video_url && !item.cover_url) {
+    return (
+      <video
+        src={item.video_url}
+        muted
+        playsInline
+        preload="metadata"
+        aria-label={item.title}
+      />
+    );
+  }
+
   if (cover) {
     return <img src={cover} alt={item.title} loading="lazy" />;
   }
