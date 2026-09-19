@@ -4,16 +4,22 @@ import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowUpRight,
-  ChevronDown,
+  BriefcaseBusiness,
+  CalendarDays,
+  Clapperboard,
+  GraduationCap,
+  Image as ImageIcon,
   Instagram,
+  Layers3,
   Linkedin,
   Mail,
   MessageCircle,
   Moon,
   Palette,
+  PenTool,
   Sparkles,
   Sun,
-  WandSparkles,
+  Users,
 } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 import PortfolioShowcase from "@/components/PortfolioShowcase";
@@ -21,24 +27,64 @@ import PortfolioShowcase from "@/components/PortfolioShowcase";
 const heroLight = "/hero-light.webp";
 const heroDark = "/hero-dark.webp";
 
-const journey = [
-  { no: "01", year: "2022", title: "Graphic Design", note: "Started building visual systems through layout, branding and social media design." },
-  { no: "02", year: "2023", title: "Brand & Social", note: "Developed a sharper eye for campaign consistency, visual hierarchy and brand storytelling." },
-  { no: "03", year: "2024", title: "Video Editing", note: "Expanded into editing, pacing, transitions and short-form visual storytelling." },
-  { no: "04", year: "NOW", title: "Design + Motion", note: "Blending static design and motion into one focused personal creative practice." },
+const tools = [
+  { code: "Ps", name: "Adobe Photoshop", use: "Social design, image editing, compositing", icon: ImageIcon },
+  { code: "Ai", name: "Adobe Illustrator", use: "Brand identity, vector design, logo work", icon: PenTool },
+  { code: "Pr", name: "Adobe Premiere Pro", use: "Video editing, reels, promotional cuts", icon: Clapperboard },
+  { code: "Ae", name: "Adobe After Effects", use: "Motion graphics, type animation, compositing", icon: Sparkles },
 ];
 
-const software = [
-  { code: "Ps", name: "Adobe Photoshop", use: "Image editing, compositing, social design" },
-  { code: "Ai", name: "Adobe Illustrator", use: "Logo, vector, brand identity" },
-  { code: "Pr", name: "Adobe Premiere Pro", use: "Video editing, reels, promotional cuts" },
-  { code: "Ae", name: "Adobe After Effects", use: "Motion graphics, type animation, compositing" },
+const coreSkills = [
+  "Graphic Design",
+  "Video Editing",
+  "Wireframing",
+  "Concepting",
+  "Teamwork",
+  "Communication",
 ];
 
-const faqs = [
-  ["What can I hire you for?", "Logo and brand identity, social media design, posters, company profiles, video editing, reels and motion graphics."],
-  ["Can I contact you for a full-time role?", "Yes. Use the hiring form below and include the role, company, timeline and any important details."],
-  ["Can you work remotely?", "Yes. I am based in Dhaka, Bangladesh and work with remote projects and collaborations."],
+const experience = [
+  {
+    company: "Apon.uk",
+    role: "Graphic Designer",
+    period: "04 Jun 2026 — Present",
+    current: true,
+    note: "Creating brand, campaign and digital visual assets across ongoing projects.",
+  },
+  {
+    company: "Kreatech",
+    role: "Designer & Editor",
+    period: "2023 — Present",
+    current: true,
+    note: "Print materials, social media design, video editing and visual storytelling.",
+  },
+  {
+    company: "Silk Road International",
+    role: "Graphic Designer",
+    period: "Feb 2026 — Jun 2026",
+    current: false,
+    note: "Worked across day-to-day graphic design and communication materials.",
+  },
+  {
+    company: "Creative IT Institute",
+    role: "Graphic Designer · Internship",
+    period: "2023",
+    current: false,
+    note: "Hands-on work in social media design and branding.",
+  },
+  {
+    company: "Fiverr",
+    role: "Remote Graphic Designer",
+    period: "2022 — 2023 · 6 months",
+    current: false,
+    note: "Delivered freelance graphic design work including social media graphics.",
+  },
+];
+
+const education = [
+  { title: "Graphic Design", place: "Creative IT Institute", meta: "2022 — 2023 · 8-month training" },
+  { title: "Video Editing", place: "Creative IT Institute", meta: "2024 · 4-month course" },
+  { title: "BBA · Marketing", place: "Tejgaon College", meta: "2023 — Present" },
 ];
 
 function scrollToId(event: MouseEvent<HTMLAnchorElement>, id: string) {
@@ -53,7 +99,6 @@ function Tip({ children, text, className = "" }: { children: ReactNode; text: st
 
 export default function Home() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
-  const [openFaq, setOpenFaq] = useState(0);
 
   useEffect(() => {
     if (window.location.hash) {
@@ -79,8 +124,8 @@ export default function Home() {
         <a href="/" onClick={(event) => scrollToId(event, "home")} className="mono-name"><Tip text="Graphic Designer · Video Editor">Shabbir Azhaf</Tip></a>
         <nav>
           <a href="/" onClick={(event) => scrollToId(event, "design")}><Tip text="Posters, reels, video, logos and motion">Work</Tip></a>
-          <a href="/" onClick={(event) => scrollToId(event, "software")}><Tip text="Creative toolkit">Software</Tip></a>
-          <a href="/" onClick={(event) => scrollToId(event, "about")}><Tip text="Creative journey">Journey</Tip></a>
+          <a href="/" onClick={(event) => scrollToId(event, "tools")}><Tip text="Creative software and capabilities">Tools</Tip></a>
+          <a href="/" onClick={(event) => scrollToId(event, "experience")}><Tip text="Professional work history">Experience</Tip></a>
           <a href="/" onClick={(event) => scrollToId(event, "contact")}><Tip text="Hiring & project inquiry">Contact</Tip></a>
         </nav>
         <div className="nav-actions">
@@ -148,78 +193,134 @@ export default function Home() {
 
       <PortfolioShowcase />
 
-      <section className="mono-section software-section" id="software">
-        <div className="section-kicker"><span>02</span><Tip text="Software I use every day">Creative Toolkit</Tip></div>
-        <div className="software-heading">
-          <h2><Tip text="Hover every app to see how I use it">The tools are quiet.<br />The ideas do the talking.</Tip></h2>
-          <WandSparkles size={30} />
+      <section className="mono-section profile-section" id="about">
+        <div className="section-kicker"><span>02</span><span>Professional Profile</span></div>
+
+        <div className="profile-intro">
+          <h2>More than a gallery.<br /><em>A working creative profile.</em></h2>
+          <p>
+            Graphic designer and video editor focused on social content, brand identity, company profiles,
+            print materials, reels and motion-led visual storytelling.
+          </p>
         </div>
 
-        <div className="software-grid">
-          {software.map((item, index) => (
-            <motion.article
-              className="software-card"
-              key={item.code}
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * .06 }}
-            >
-              <div className="software-icon">{item.code}</div>
+        <div className="profile-dashboard">
+          <section className="tool-experience-panel" id="tools">
+            <div className="profile-panel-head">
               <div>
-                <strong>{item.name}</strong>
-                <span>{item.use}</span>
+                <span>Creative toolkit</span>
+                <h3>Tools I work with</h3>
               </div>
-              <div className="software-popup">{item.use}</div>
-            </motion.article>
-          ))}
-        </div>
-      </section>
+              <Layers3 size={22} />
+            </div>
 
-      <section className="mono-section journey-section" id="about">
-        <div className="section-kicker"><span>03</span><Tip text="No company list — only the creative path">Creative Journey</Tip></div>
-        <div className="journey-head">
-          <h2><Tip text="A simple serial timeline">Learning, refining,<br />then combining both worlds.</Tip></h2>
-          <p>No company names. No résumé-style block. Just the progression of the craft, shown in order.</p>
+            <div className="tool-experience-grid">
+              {tools.map((item, index) => {
+                const Icon = item.icon;
+                return (
+                  <motion.article
+                    className="tool-experience-card"
+                    key={item.code}
+                    initial={{ opacity: 0, y: 18 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * .06 }}
+                    whileHover={{ y: -5 }}
+                  >
+                    <div className="tool-icon-orbit">
+                      <Icon size={18} />
+                      <span>{item.code}</span>
+                    </div>
+                    <div>
+                      <strong>{item.name}</strong>
+                      <p>{item.use}</p>
+                    </div>
+                    <ArrowUpRight size={15} />
+                  </motion.article>
+                );
+              })}
+            </div>
+
+            <div className="core-skill-strip">
+              <span className="skill-strip-label"><Users size={15} /> Core skills</span>
+              <div>
+                {coreSkills.map((skill) => <span key={skill}>{skill}</span>)}
+              </div>
+            </div>
+          </section>
+
+          <section className="work-experience-panel" id="experience">
+            <div className="profile-panel-head">
+              <div>
+                <span>Professional timeline</span>
+                <h3>Work experience</h3>
+              </div>
+              <BriefcaseBusiness size={22} />
+            </div>
+
+            <div className="experience-timeline">
+              {experience.map((item, index) => (
+                <motion.article
+                  className="experience-item"
+                  key={item.company + item.period}
+                  initial={{ opacity: 0, x: 18 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * .055 }}
+                >
+                  <div className="experience-marker">
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                  </div>
+                  <div className="experience-copy">
+                    <div className="experience-topline">
+                      <div>
+                        <h4>{item.company}</h4>
+                        <strong>{item.role}</strong>
+                      </div>
+                      {item.current && <span className="current-badge"><i /> Current</span>}
+                    </div>
+                    <div className="experience-period"><CalendarDays size={13} /> {item.period}</div>
+                    <p>{item.note}</p>
+                  </div>
+                </motion.article>
+              ))}
+            </div>
+          </section>
         </div>
 
-        <div className="journey-list">
-          {journey.map((item) => (
-            <motion.article
-              key={item.no}
-              className="journey-row"
-              initial={{ opacity: 0, x: -16 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
-              <span>{item.no}</span>
-              <span className="journey-year">{item.year}</span>
-              <h3><Tip text={item.note}>{item.title}</Tip></h3>
-              <p>{item.note}</p>
-              <Sparkles size={16} />
-            </motion.article>
-          ))}
-        </div>
-      </section>
+        <section className="education-panel">
+          <div className="profile-panel-head">
+            <div>
+              <span>Education & training</span>
+              <h3>Built through practice</h3>
+            </div>
+            <GraduationCap size={22} />
+          </div>
 
-      <section className="mono-section faq-section">
-        <div className="faq-intro">
-          <div className="section-kicker"><span>04</span><Tip text="Quick project answers">Before we work together</Tip></div>
-          <h2>Simple questions.<br /><em>Clear answers.</em></h2>
-        </div>
-        <div className="faq-list">
-          {faqs.map(([q, a], index) => (
-            <button key={q} className={openFaq === index ? "open" : ""} onClick={() => setOpenFaq(openFaq === index ? -1 : index)}>
-              <div><span><Tip text="Click to expand">{q}</Tip></span><ChevronDown size={18} /></div>
-              <p>{a}</p>
-            </button>
-          ))}
-        </div>
+          <div className="education-grid">
+            {education.map((item, index) => (
+              <motion.article
+                key={item.title + item.meta}
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * .06 }}
+              >
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <div>
+                  <strong>{item.title}</strong>
+                  <p>{item.place}</p>
+                </div>
+                <small>{item.meta}</small>
+              </motion.article>
+            ))}
+          </div>
+        </section>
       </section>
 
       <section className="mono-contact" id="contact">
         <div className="contact-copy">
-          <div className="section-kicker invert"><span>05</span><Tip text="Freelance · Collaboration · Full-time">Let’s work together</Tip></div>
+          <div className="section-kicker invert"><span>03</span><Tip text="Freelance · Collaboration · Full-time">Let’s work together</Tip></div>
           <h2>Hiring?<br />Launching something?<br /><em>Send it my way.</em></h2>
           <p>Use the form for a project, collaboration, freelance request or full-time creative opportunity.</p>
 
@@ -235,7 +336,7 @@ export default function Home() {
 
       <footer className="mono-footer">
         <div><strong>Shabbir Hossain Azhaf</strong><span>Graphic Designer / Video Editor</span></div>
-        <div><a href="/" onClick={(event) => scrollToId(event, "design")}>Work</a><a href="/" onClick={(event) => scrollToId(event, "software")}>Software</a><a href="/" onClick={(event) => scrollToId(event, "about")}>Journey</a><a href="/" onClick={(event) => scrollToId(event, "contact")}>Contact</a></div>
+        <div><a href="/" onClick={(event) => scrollToId(event, "design")}>Work</a><a href="/" onClick={(event) => scrollToId(event, "tools")}>Tools</a><a href="/" onClick={(event) => scrollToId(event, "experience")}>Experience</a><a href="/" onClick={(event) => scrollToId(event, "contact")}>Contact</a></div>
         <span>© 2026</span>
       </footer>
     </main>
