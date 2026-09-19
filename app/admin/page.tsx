@@ -38,8 +38,7 @@ export default function AdminPage() {
         </div>
 
         <div className="admin-note">
-          <strong>Design phase:</strong> the dashboard UI is ready. Authentication,
-          database and uploads will connect to Supabase in the CMS implementation step.
+          <strong>Portfolio flow:</strong> publish an item with one of the site categories. Published work is loaded dynamically on the homepage and appears first as a round preview, not as a full-size card.
         </div>
 
         <div className="admin-layout">
@@ -61,20 +60,18 @@ export default function AdminPage() {
             <div className="admin-fields">
               <label>Project title<input placeholder="e.g. Brand campaign 2026" /></label>
               <label>Category
-                <select defaultValue={type === "design" ? "Social Media Design" : "Motion Graphics"}>
+                <select defaultValue={type === "design" ? "Posters" : "Reels"}>
                   {type === "design" ? (
                     <>
-                      <option>Social Media Design</option>
-                      <option>Logo & Brand Identity</option>
-                      <option>Company Profile</option>
-                      <option>Print / Flyer</option>
+                      <option>Posters</option>
+                      <option>Logos</option>
+                      <option>Company Profiles</option>
                     </>
                   ) : (
                     <>
-                      <option>Motion Graphics</option>
-                      <option>Reels & Social Video</option>
-                      <option>Promotional Video</option>
-                      <option>Video Editing</option>
+                      <option>Reels</option>
+                      <option>Videos</option>
+                      <option>Animations</option>
                     </>
                   )}
                 </select>
