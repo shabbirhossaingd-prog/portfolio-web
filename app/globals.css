@@ -224,9 +224,9 @@ button, input, select, textarea { font: inherit; }
 }
 
 .hero-portrait-stage {
-  width: min(500px, 38vw);
+  width: min(440px, 36vw);
   isolation: isolate;
-  height: 610px;
+  height: 600px;
   position: absolute;
   z-index: 2;
   left: 50%;
@@ -247,18 +247,19 @@ button, input, select, textarea { font: inherit; }
 
 .hero-portrait-main {
   z-index: 2;
-  filter: grayscale(1) contrast(1.02);
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 74%, rgba(0,0,0,.88) 85%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 74%, rgba(0,0,0,.88) 85%, transparent 100%);
+  filter: grayscale(1) contrast(1.05);
+  image-rendering: auto;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 82%, rgba(0,0,0,.96) 90%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 82%, rgba(0,0,0,.96) 90%, transparent 100%);
 }
 
 .hero-portrait-blur {
   z-index: 1;
-  opacity: .34;
-  filter: grayscale(1) blur(34px);
-  transform: scale(1.08);
-  -webkit-mask-image: radial-gradient(ellipse at center, #000 32%, rgba(0,0,0,.55) 58%, transparent 78%);
-  mask-image: radial-gradient(ellipse at center, #000 32%, rgba(0,0,0,.55) 58%, transparent 78%);
+  opacity: .10;
+  filter: grayscale(1) blur(18px);
+  transform: scale(1.035);
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 42%, rgba(0,0,0,.38) 68%, transparent 86%);
+  mask-image: radial-gradient(ellipse at center, #000 42%, rgba(0,0,0,.38) 68%, transparent 86%);
 }
 
 .portrait-edge-fade {
@@ -266,8 +267,8 @@ button, input, select, textarea { font: inherit; }
   inset: -2px;
   z-index: 3;
   background:
-    linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 82%, transparent) 7%, transparent 22%, transparent 78%, color-mix(in srgb, var(--bg) 82%, transparent) 93%, var(--bg) 100%),
-    linear-gradient(0deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 72%, transparent) 10%, transparent 28%);
+    linear-gradient(90deg, color-mix(in srgb, var(--bg) 72%, transparent) 0%, transparent 10%, transparent 90%, color-mix(in srgb, var(--bg) 72%, transparent) 100%),
+    linear-gradient(0deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 42%, transparent) 7%, transparent 20%);
   pointer-events: none;
 }
 
@@ -1210,11 +1211,11 @@ button, input, select, textarea { font: inherit; }
 }
 
 .theme-dark .hero-portrait-main {
-  filter: grayscale(1) contrast(1.08) brightness(.92);
+  filter: grayscale(1) contrast(1.08) brightness(.98);
 }
 
 .theme-light .hero-portrait-main {
-  filter: grayscale(1) contrast(1.02) brightness(1.02);
+  filter: grayscale(1) contrast(1.04) brightness(1.01);
 }
 
 @media (hover: hover) and (pointer: fine) {
