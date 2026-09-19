@@ -8,6 +8,7 @@ const folderToProject = {
   Posters: { type: "design", folder: "posters" },
   Reels: { type: "video", folder: "reels" },
   Videos: { type: "video", folder: "videos" },
+  "AI Video": { type: "video", folder: "ai-video" },
   Logos: { type: "design", folder: "logos" },
   "Company Profiles": { type: "design", folder: "company-profiles" },
   Animations: { type: "video", folder: "animations" },
