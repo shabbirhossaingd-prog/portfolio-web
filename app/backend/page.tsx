@@ -265,53 +265,80 @@ export default function BackendPage() {
   }
 
   async function uploadAndSave(published: boolean) {
-    if (!file || !title.trim()) {
-      setStatus("Add a project title and choose a file first.");
-      return;
-    }
+    const pastedLink = linkUrl.trim();
 
-    if (!browserSupabase) {
-      setStatus("Supabase public environment variables are missing.");
+    if (!title.trim() || (!file && !pastedLink)) {
+      setStatus("Add a project title, then choose a file or paste a link.");
       return;
     }
 
     const shouldBeVideo = selectedFolder.kind === "video";
-    if (shouldBeVideo && !isSupportedVideo(file)) {
-      setStatus("Unsupported video. Use MP4, WebM, MOV, M4V or OGG.");
-      return;
+
+    if (file) {
+      if (!browserSupabase) {
+        setStatus("Supabase public environment variables are missing.");
+        return;
+      }
+
+      if (shouldBeVideo && !isSupportedVideo(file)) {
+        setStatus("Unsupported video. Use MP4, WebM, MOV, M4V or OGG.");
+        return;
+      }
+
+      if (!shouldBeVideo && !isSupportedImage(file)) {
+        setStatus("Unsupported image. Use JPG, PNG, WebP, GIF or AVIF.");
+        return;
+      }
     }
-    if (!shouldBeVideo && !isSupportedImage(file)) {
-      setStatus("Unsupported image. Use JPG, PNG, WebP, GIF or AVIF.");
-      return;
+
+    if (pastedLink) {
+      try {
+        new URL(pastedLink);
+      } catch {
+        setStatus("Paste a valid Google Drive, YouTube or direct media link.");
+        return;
+      }
     }
 
     setPublishBusy(true);
-    setStatus("Preparing secure upload…");
 
     try {
-      const signedResponse = await fetch("/api/backend/upload-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          folder: selectedFolder.slug,
-          fileName: file.name,
-        }),
-      });
+      let fileUrl = "";
+      let sourceUrl = pastedLink;
+      let sourceKind: "upload" | "youtube" | "drive" | "direct" = pastedLink
+        ? sourceKindFromUrl(pastedLink)
+        : "upload";
 
-      const signed = await signedResponse.json();
-      if (!signedResponse.ok) throw new Error(signed.error || "Could not prepare upload.");
+      if (file) {
+        setStatus("Preparing secure upload…");
 
-      setStatus("Uploading original file without resizing or cropping…");
-
-      const { error: uploadError } = await browserSupabase.storage
-        .from(signed.bucket)
-        .uploadToSignedUrl(signed.path, signed.token, file, {
-          contentType: inferredContentType(file),
+        const signedResponse = await fetch("/api/backend/upload-url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            folder: selectedFolder.slug,
+            fileName: file.name,
+          }),
         });
 
-      if (uploadError) throw uploadError;
+        const signed = await signedResponse.json();
+        if (!signedResponse.ok) throw new Error(signed.error || "Could not prepare upload.");
 
-      setStatus("Saving portfolio item…");
+        setStatus("Uploading original file without resizing or cropping…");
+
+        const { error: uploadError } = await browserSupabase!.storage
+          .from(signed.bucket)
+          .uploadToSignedUrl(signed.path, signed.token, file, {
+            contentType: inferredContentType(file),
+          });
+
+        if (uploadError) throw uploadError;
+        fileUrl = signed.publicUrl;
+        sourceUrl = signed.publicUrl;
+        sourceKind = "upload";
+      } else {
+        setStatus("Saving linked media…");
+      }
 
       const saveResponse = await fetch("/api/backend/projects", {
         method: "POST",
@@ -320,7 +347,9 @@ export default function BackendPage() {
           title: title.trim(),
           category: folder,
           description: description.trim(),
-          fileUrl: signed.publicUrl,
+          fileUrl: fileUrl || undefined,
+          sourceUrl: sourceUrl || undefined,
+          sourceKind,
           year: Number(year) || new Date().getFullYear(),
           published,
         }),
@@ -333,7 +362,7 @@ export default function BackendPage() {
       resetForm();
       await loadProjects();
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Upload failed.");
+      setStatus(error instanceof Error ? error.message : "Save failed.");
     } finally {
       setPublishBusy(false);
     }
