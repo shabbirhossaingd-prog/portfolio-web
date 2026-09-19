@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { Check, ExternalLink, LoaderCircle, Plus, RotateCcw, Save, Sparkles, Trash2, Upload } from "lucide-react";
 import {
@@ -75,11 +75,36 @@ export default function BackendContentEditor() {
   const [heroBusy, setHeroBusy] = useState<"light" | "dark" | null>(null);
   const [heroPreviewMode, setHeroPreviewMode] = useState<"light" | "dark">("light");
   const [framingBusy, setFramingBusy] = useState(false);
+  const heroPreviewRef = useRef<HTMLIFrameElement>(null);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     load();
   }, []);
+
+  function postHeroPreview() {
+    const mode = heroPreviewMode;
+    const scale = mode === "light" ? (content.hero.lightScale ?? 1.3) : (content.hero.darkScale ?? 1.3);
+    const x = mode === "light" ? (content.hero.lightX ?? 0) : (content.hero.darkX ?? 0);
+    const y = mode === "light" ? (content.hero.lightY ?? 0) : (content.hero.darkY ?? 0);
+
+    heroPreviewRef.current?.contentWindow?.postMessage(
+      { type: "portfolio-hero-preview", mode, scale, x, y },
+      window.location.origin,
+    );
+  }
+
+  useEffect(() => {
+    postHeroPreview();
+  }, [
+    heroPreviewMode,
+    content.hero.lightScale,
+    content.hero.lightX,
+    content.hero.lightY,
+    content.hero.darkScale,
+    content.hero.darkX,
+    content.hero.darkY,
+  ]);
 
   async function load() {
     const response = await fetch("/api/backend/content", { cache: "no-store" });
@@ -301,28 +326,20 @@ export default function BackendContentEditor() {
 
             {(() => {
               const mode = heroPreviewMode;
-              const image = mode === "light"
-                ? (content.hero.lightImage || "/hero-light.webp")
-                : (content.hero.darkImage || "/hero-dark.webp");
               const scale = mode === "light" ? (content.hero.lightScale ?? 1.3) : (content.hero.darkScale ?? 1.3);
               const x = mode === "light" ? (content.hero.lightX ?? 0) : (content.hero.darkX ?? 0);
               const y = mode === "light" ? (content.hero.lightY ?? 0) : (content.hero.darkY ?? 0);
-              const transform = `translate(${x}%, ${y}%) scale(${scale})`;
 
               return (
                 <>
-                  <div className={"admin-hero-live " + mode}>
-                    <div className="admin-hero-live-copy">
-                      <strong>Visuals with clarity.</strong>
-                      <em>Motion with character.</em>
-                    </div>
-                    <div className="admin-hero-live-blur" style={{ transform }}>
-                      <img src={image} alt="" aria-hidden="true" />
-                    </div>
-                    <div className="admin-hero-live-main" style={{ transform }}>
-                      <img src={image} alt={mode + " mode homepage preview"} />
-                    </div>
-                    <div className="admin-hero-live-fade" />
+                  <div className="admin-hero-live-browser">
+                    <iframe
+                      ref={heroPreviewRef}
+                      title="Real homepage hero preview"
+                      src="/?heroPreview=1"
+                      onLoad={postHeroPreview}
+                    />
+                    <span>Real homepage preview · same layout and CSS as the live website</span>
                   </div>
 
                   <div className="admin-hero-controls">
