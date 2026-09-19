@@ -67,6 +67,7 @@ export default function BackendPage() {
   const [description, setDescription] = useState("");
   const [year, setYear] = useState(new Date().getFullYear().toString());
   const [file, setFile] = useState<File | null>(null);
+  const [linkUrl, setLinkUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
   const [publishBusy, setPublishBusy] = useState(false);
   const [status, setStatus] = useState("");
@@ -118,6 +119,56 @@ export default function BackendPage() {
     };
 
     return types[extension] || "application/octet-stream";
+  }
+
+  function youtubeIdFromUrl(value: string) {
+    try {
+      const url = new URL(value);
+      if (url.hostname.includes("youtu.be")) return url.pathname.replace("/", "").split("/")[0] || null;
+      if (url.pathname.startsWith("/embed/")) return url.pathname.split("/embed/")[1]?.split("/")[0] || null;
+      if (url.pathname.startsWith("/shorts/")) return url.pathname.split("/shorts/")[1]?.split("/")[0] || null;
+      return url.searchParams.get("v");
+    } catch {
+      return null;
+    }
+  }
+
+  function driveFileId(value: string) {
+    try {
+      const url = new URL(value);
+      const byPath = url.pathname.match(/\/file\/d\/([^/]+)/)?.[1];
+      if (byPath) return byPath;
+      return url.searchParams.get("id");
+    } catch {
+      return null;
+    }
+  }
+
+  function sourceKindFromUrl(value: string): "youtube" | "drive" | "direct" {
+    if (youtubeIdFromUrl(value)) return "youtube";
+    try {
+      const url = new URL(value);
+      if (url.hostname.includes("drive.google.com")) return "drive";
+    } catch {}
+    return "direct";
+  }
+
+  function normalizedPreviewUrl(value: string) {
+    const sourceKind = sourceKindFromUrl(value);
+    if (sourceKind === "youtube") {
+      const id = youtubeIdFromUrl(value);
+      return id ? "https://www.youtube.com/embed/" + id + "?controls=1&rel=0" : value;
+    }
+    if (sourceKind === "drive") {
+      const id = driveFileId(value);
+      return id ? "https://drive.google.com/file/d/" + id + "/preview" : value;
+    }
+    return value;
+  }
+
+  function driveThumbnail(value: string) {
+    const id = driveFileId(value);
+    return id ? "https://drive.google.com/thumbnail?id=" + id + "&sz=w1200" : "";
   }
 
   function openPanel(panel: "dashboard" | "visual" | "video") {
@@ -210,6 +261,7 @@ export default function BackendPage() {
     setDescription("");
     setYear(new Date().getFullYear().toString());
     setFile(null);
+    setLinkUrl("");
   }
 
   async function uploadAndSave(published: boolean) {
