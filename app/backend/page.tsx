@@ -442,9 +442,9 @@ export default function BackendPage() {
       <aside className="admin-sidebar">
         <a className="admin-brand" href="/">SA</a>
         <div className="admin-nav">
-          <button className={activePanel === "dashboard" ? "active" : ""} onClick={() => openPanel("dashboard")}><LayoutDashboard size={18} /> Dashboard</button>
-          <button className={activePanel === "visual" ? "active" : ""} onClick={() => openPanel("visual")}><ImageIcon size={18} /> Visual work</button>
-          <button className={activePanel === "video" ? "active" : ""} onClick={() => openPanel("video")}><Video size={18} /> Video work</button>
+          <button type="button" className={activePanel === "dashboard" ? "active" : ""} onClick={() => openPanel("dashboard")}><LayoutDashboard size={18} /> Dashboard</button>
+          <button type="button" className={activePanel === "visual" ? "active" : ""} onClick={() => openPanel("visual")}><ImageIcon size={18} /> Visual work</button>
+          <button type="button" className={activePanel === "video" ? "active" : ""} onClick={() => openPanel("video")}><Video size={18} /> Video work</button>
         </div>
         <button className="admin-logout" onClick={logout}><LogOut size={17} /> Log out</button>
       </aside>
@@ -453,20 +453,36 @@ export default function BackendPage() {
         <div className="admin-head">
           <div>
             <span>Portfolio CMS</span>
-            <h1>Upload original work</h1>
+            <h1>
+              {activePanel === "dashboard"
+                ? "Manage portfolio"
+                : activePanel === "video"
+                  ? "Video work"
+                  : "Visual work"}
+            </h1>
           </div>
-          <button className="admin-primary" onClick={resetForm}><Plus size={17} /> New item</button>
+          <button
+            type="button"
+            className="admin-primary"
+            onClick={() => {
+              resetForm();
+              openPanel(activePanel === "video" ? "video" : "visual");
+            }}
+          ><Plus size={17} /> New item</button>
         </div>
 
-        <div className="admin-note">
-          <strong>Original ratio is preserved.</strong> A 9:16 reel stays 9:16, a 4:5 poster stays 4:5, and wide video stays wide.
-          The public gallery only adds rounded corners; full view opens the real original media.
-        </div>
-
-        <div ref={contentEditorRef}>
-          <BackendContentEditor />
-        </div>
-
+        {activePanel === "dashboard" ? (
+          <div ref={contentEditorRef}>
+            <BackendContentEditor />
+          </div>
+        ) : (
+          <>
+            <div className="admin-note">
+              <strong>{activePanel === "video" ? "Video work" : "Visual work"} mode.</strong>{" "}
+              {activePanel === "video"
+                ? "Add Reels, Videos, AI Video or Animations using an upload or pasted Drive / YouTube / direct link."
+                : "Add Posters, Logos or Company Profiles using an upload or pasted Drive / direct image link."}
+            </div>
         <div className="admin-layout" ref={uploadPanelRef}>
           <div className="admin-panel">
             <div className="admin-panel-title">
@@ -671,6 +687,9 @@ export default function BackendPage() {
             </div>
           </div>
         </div>
+
+          </>
+        )}
       </section>
     </main>
   );
