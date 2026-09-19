@@ -76,9 +76,10 @@ export default function BackendPage() {
   const [status, setStatus] = useState("");
   const [projects, setProjects] = useState<ProjectRow[]>([]);
 
-  const linkedPreview = linkUrl.trim() ? normalizedPreviewUrl(linkUrl.trim()) : "";
+  const linkedDriveFolder = linkUrl.trim() ? isDriveFolderUrl(linkUrl.trim()) : false;
+  const linkedPreview = linkUrl.trim() && !linkedDriveFolder ? normalizedPreviewUrl(linkUrl.trim()) : "";
   const linkedSourceKind = linkUrl.trim() ? sourceKindFromUrl(linkUrl.trim()) : null;
-  const linkedDriveThumb = linkedSourceKind === "drive" ? driveThumbnail(linkUrl.trim()) : "";
+  const linkedDriveThumb = linkedSourceKind === "drive" && !linkedDriveFolder ? driveThumbnail(linkUrl.trim()) : "";
 
   const selectedFolder = useMemo(
     () => folders.find((item) => item.label === folder) || folders[0],
@@ -148,6 +149,15 @@ export default function BackendPage() {
       return url.searchParams.get("id");
     } catch {
       return null;
+    }
+  }
+
+  function isDriveFolderUrl(value: string) {
+    try {
+      const url = new URL(value);
+      return url.hostname.includes("drive.google.com") && /\/drive\/folders\//.test(url.pathname);
+    } catch {
+      return false;
     }
   }
 
@@ -274,8 +284,8 @@ export default function BackendPage() {
   async function uploadAndSave(published: boolean) {
     const pastedLink = linkUrl.trim();
 
-    if (!title.trim() || (!file && !pastedLink)) {
-      setStatus("Add a project title, then choose a file or paste a link.");
+    if (!file && !pastedLink) {
+      setStatus("Choose a file or paste a media link first.");
       return;
     }
 
@@ -303,6 +313,11 @@ export default function BackendPage() {
         new URL(pastedLink);
       } catch {
         setStatus("Paste a valid Google Drive, YouTube or direct media link.");
+        return;
+      }
+
+      if (isDriveFolderUrl(pastedLink)) {
+        setStatus("That is a Google Drive folder link. Open the actual image/video file → Share → Copy link, then paste that file link here.");
         return;
       }
     }
@@ -510,11 +525,11 @@ export default function BackendPage() {
 
             <div className="admin-fields">
               <label>
-                Project title
+                Project title <span className="admin-optional">Optional</span>
                 <input
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
-                  placeholder="e.g. Campaign poster"
+                  placeholder="Optional — e.g. Campaign poster"
                 />
               </label>
 
@@ -544,7 +559,7 @@ export default function BackendPage() {
               </div>
 
               <label>
-                Description
+                Description <span className="admin-optional">Optional</span>
                 <textarea
                   rows={4}
                   value={description}
@@ -628,6 +643,12 @@ export default function BackendPage() {
                   ) : (
                     <img src={previewUrl} alt="Upload preview" />
                   )
+                ) : linkedDriveFolder ? (
+                  <div className="admin-preview-empty admin-preview-warning">
+                    <FolderOpen size={25} />
+                    <strong>Drive folder link can’t display a single project.</strong>
+                    <span>Open the actual poster/video file in Drive → Share → Copy link → paste that file link.</span>
+                  </div>
                 ) : linkedPreview ? (
                   linkedSourceKind === "youtube" || linkedSourceKind === "drive" ? (
                     selectedFolder.kind === "image" && linkedDriveThumb ? (
