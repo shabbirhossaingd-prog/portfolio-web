@@ -104,6 +104,12 @@ export default function BackendContentEditor() {
           <label>Kicker<input value={content.profile.kicker} onChange={(e) => setContent({ ...content, profile: { ...content.profile, kicker: e.target.value } })} /></label>
           <label>Title<textarea rows={3} value={content.profile.title} onChange={(e) => setContent({ ...content, profile: { ...content.profile, title: e.target.value } })} /></label>
           <label>Description<textarea rows={4} value={content.profile.description} onChange={(e) => setContent({ ...content, profile: { ...content.profile, description: e.target.value } })} /></label>
+          <label>Tools kicker<input value={content.profile.toolsKicker} onChange={(e) => setContent({ ...content, profile: { ...content.profile, toolsKicker: e.target.value } })} /></label>
+          <label>Tools title<input value={content.profile.toolsTitle} onChange={(e) => setContent({ ...content, profile: { ...content.profile, toolsTitle: e.target.value } })} /></label>
+          <label>Experience kicker<input value={content.profile.experienceKicker} onChange={(e) => setContent({ ...content, profile: { ...content.profile, experienceKicker: e.target.value } })} /></label>
+          <label>Experience title<input value={content.profile.experienceTitle} onChange={(e) => setContent({ ...content, profile: { ...content.profile, experienceTitle: e.target.value } })} /></label>
+          <label>Education kicker<input value={content.profile.educationKicker} onChange={(e) => setContent({ ...content, profile: { ...content.profile, educationKicker: e.target.value } })} /></label>
+          <label>Education title<input value={content.profile.educationTitle} onChange={(e) => setContent({ ...content, profile: { ...content.profile, educationTitle: e.target.value } })} /></label>
         </div>
 
         <div className="admin-content-card">
