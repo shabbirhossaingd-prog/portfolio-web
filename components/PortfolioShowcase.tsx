@@ -90,21 +90,18 @@ function itemCover(item: PortfolioItem) {
   return item.cover_url || item.gallery_urls?.[0] || youtubeThumb(item.youtube_url) || null;
 }
 
-function PreviewMedia({ item, compact = false }: { item: PortfolioItem; compact?: boolean }) {
+function PinMedia({ item, index }: { item: PortfolioItem; index: number }) {
   const cover = itemCover(item);
+  const category = resolveFilter(item);
 
   if (cover) {
-    return <img src={cover} alt={item.title} loading={compact ? "lazy" : "eager"} />;
-  }
-
-  if (!compact && item.video_url) {
-    return <video src={item.video_url} muted playsInline preload="metadata" aria-label={item.title} />;
+    return <img src={cover} alt={item.title} loading="lazy" />;
   }
 
   return (
-    <div className="portfolio-empty-art" aria-hidden="true">
-      <span>{resolveFilter(item)}</span>
-      <strong>{item.title.slice(0, 2).toUpperCase()}</strong>
+    <div className={"portfolio-pin-placeholder ratio-" + (index % 4)} aria-hidden="true">
+      <span>{category}</span>
+      <strong>{item.title}</strong>
     </div>
   );
 }
@@ -131,13 +128,20 @@ function FullMedia({ item }: { item: PortfolioItem }) {
   const cover = itemCover(item);
   if (cover) return <img className="portfolio-full-image" src={cover} alt={item.title} />;
 
-  return <div className="portfolio-full-empty"><PreviewMedia item={item} /></div>;
+  return (
+    <div className="portfolio-full-empty">
+      <div className="portfolio-pin-placeholder ratio-1">
+        <span>{resolveFilter(item)}</span>
+        <strong>{item.title}</strong>
+      </div>
+    </div>
+  );
 }
 
 export default function PortfolioShowcase() {
   const [items, setItems] = useState<PortfolioItem[]>(fallbackItems);
   const [activeFilter, setActiveFilter] = useState<FilterName>("All Work");
-  const [selectedId, setSelectedId] = useState(fallbackItems[0]?.id || "");
+  const [selectedId, setSelectedId] = useState("");
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -154,10 +158,7 @@ export default function PortfolioShowcase() {
         .order("created_at", { ascending: false });
 
       if (cancelled || error || !data?.length) return;
-
-      const nextItems = data as PortfolioItem[];
-      setItems(nextItems);
-      setSelectedId(nextItems[0].id);
+      setItems(data as PortfolioItem[]);
     }
 
     loadProjects();
@@ -172,13 +173,20 @@ export default function PortfolioShowcase() {
     return items.filter((item) => resolveFilter(item) === activeFilter);
   }, [items, activeFilter]);
 
-  const selected = filtered.find((item) => item.id === selectedId) || filtered[0] || null;
+  const selected = items.find((item) => item.id === selectedId) || null;
+  const selectedIndex = selected ? filtered.findIndex((item) => item.id === selected.id) : -1;
 
-  useEffect(() => {
-    if (filtered.length && !filtered.some((item) => item.id === selectedId)) {
-      setSelectedId(filtered[0].id);
-    }
-  }, [filtered, selectedId]);
+  function openItem(item: PortfolioItem) {
+    setSelectedId(item.id);
+    setOpen(true);
+  }
+
+  function navigate(delta: number) {
+    if (!selected || filtered.length < 2) return;
+    const current = Math.max(0, filtered.findIndex((item) => item.id === selected.id));
+    const next = (current + delta + filtered.length) % filtered.length;
+    setSelectedId(filtered[next].id);
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -199,32 +207,19 @@ export default function PortfolioShowcase() {
     };
   }, [open, selectedId, filtered]);
 
-  function changeFilter(filter: FilterName) {
-    setActiveFilter(filter);
-    const next = filter === "All Work" ? items : items.filter((item) => resolveFilter(item) === filter);
-    if (next[0]) setSelectedId(next[0].id);
-  }
-
-  function navigate(delta: number) {
-    if (!selected || filtered.length < 2) return;
-    const current = filtered.findIndex((item) => item.id === selected.id);
-    const next = (current + delta + filtered.length) % filtered.length;
-    setSelectedId(filtered[next].id);
-  }
-
   return (
     <section className="mono-section portfolio-section" id="design">
       <div className="section-kicker"><span>01</span><span>Selected Work</span></div>
 
       <div className="section-title-row">
-        <h2>Small previews first.<br />Full work on demand.</h2>
+        <h2>Browse everything.<br />Filter what you need.</h2>
         <p>
-          Choose a category, move through the round previews, then click the main piece for a full-screen view.
-          New published work from the portfolio database appears here automatically.
+          A Pinterest-inspired portfolio wall. All Work shows everything; each category button instantly shows every project from that category.
+          Click any piece to open the full poster, reel, video or case-study view.
         </p>
       </div>
 
-      <div className="portfolio-filter-row" role="tablist" aria-label="Portfolio categories">
+      <div className="portfolio-filter-row portfolio-filter-sticky" role="tablist" aria-label="Portfolio categories">
         {filters.map((filter) => {
           const count = filter === "All Work" ? items.length : items.filter((item) => resolveFilter(item) === filter).length;
           return (
@@ -234,7 +229,7 @@ export default function PortfolioShowcase() {
               role="tab"
               aria-selected={activeFilter === filter}
               className={activeFilter === filter ? "active" : ""}
-              onClick={() => changeFilter(filter)}
+              onClick={() => setActiveFilter(filter)}
             >
               <span>{filter}</span>
               <small>{String(count).padStart(2, "0")}</small>
@@ -243,63 +238,53 @@ export default function PortfolioShowcase() {
         })}
       </div>
 
-      {selected ? (
-        <div className="portfolio-browser">
-          <div className="portfolio-orbit-rail" aria-label="Portfolio previews">
-            {filtered.map((item, index) => (
-              <motion.button
-                type="button"
-                key={item.id}
-                className={"portfolio-orbit-thumb " + (selected.id === item.id ? "active" : "")}
-                onClick={() => setSelectedId(item.id)}
-                whileHover={{ scale: 1.06 }}
-                whileTap={{ scale: 0.96 }}
-                aria-label={"Show " + item.title}
-                aria-pressed={selected.id === item.id}
-              >
-                <PreviewMedia item={item} compact />
-                <span>{String(index + 1).padStart(2, "0")}</span>
-              </motion.button>
-            ))}
-          </div>
+      <AnimatePresence mode="wait">
+        {filtered.length ? (
+          <motion.div
+            key={activeFilter}
+            className="portfolio-masonry"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.26 }}
+          >
+            {filtered.map((item, index) => {
+              const isVideo = item.type === "video" || Boolean(item.video_url || item.youtube_url);
+              return (
+                <motion.article
+                  className="portfolio-pin"
+                  key={item.id}
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.38, delay: Math.min(index * 0.025, 0.18) }}
+                >
+                  <button type="button" className="portfolio-pin-media" onClick={() => openItem(item)} aria-label={"Open " + item.title}>
+                    <PinMedia item={item} index={index} />
+                    <span className="portfolio-pin-shade" />
+                    {isVideo && <span className="portfolio-pin-play"><Play size={15} fill="currentColor" /> Play</span>}
+                    <span className="portfolio-pin-open"><Maximize2 size={15} /> View</span>
+                  </button>
 
-          <div className="portfolio-focus">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={selected.id}
-                className="portfolio-focus-media"
-                initial={{ opacity: 0, scale: 0.985, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.99 }}
-                transition={{ duration: 0.3 }}
-              >
-                <PreviewMedia item={selected} />
-                {(selected.type === "video" || selected.video_url || selected.youtube_url) && (
-                  <span className="portfolio-play-badge"><Play size={16} fill="currentColor" /> Play</span>
-                )}
-                <button type="button" className="portfolio-open" onClick={() => setOpen(true)}>
-                  <Maximize2 size={17} />
-                  Full view
-                </button>
-              </motion.div>
-            </AnimatePresence>
-
-            <div className="portfolio-focus-meta">
-              <div>
-                <span>{resolveFilter(selected)} · {selected.year || "Selected"}</span>
-                <h3>{selected.title}</h3>
-                {selected.description && <p>{selected.description}</p>}
-              </div>
-              <div className="portfolio-focus-count">
-                <strong>{String(filtered.findIndex((item) => item.id === selected.id) + 1).padStart(2, "0")}</strong>
-                <span>/ {String(filtered.length).padStart(2, "0")}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="portfolio-no-results">No published work in this category yet.</div>
-      )}
+                  <div className="portfolio-pin-meta">
+                    <div>
+                      <span>{resolveFilter(item)}{item.year ? " · " + item.year : ""}</span>
+                      <h3>{item.title}</h3>
+                    </div>
+                    <button type="button" onClick={() => openItem(item)} aria-label={"Open " + item.title}>
+                      <Maximize2 size={15} />
+                    </button>
+                  </div>
+                </motion.article>
+              );
+            })}
+          </motion.div>
+        ) : (
+          <motion.div className="portfolio-no-results" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            No published work in this category yet.
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {open && selected && (
@@ -339,7 +324,10 @@ export default function PortfolioShowcase() {
             >
               <FullMedia item={selected} />
               <div className="portfolio-lightbox-caption">
-                <span>{resolveFilter(selected)}</span>
+                <span>
+                  {resolveFilter(selected)}
+                  {selectedIndex >= 0 ? " · " + String(selectedIndex + 1).padStart(2, "0") + "/" + String(filtered.length).padStart(2, "0") : ""}
+                </span>
                 <strong>{selected.title}</strong>
               </div>
             </motion.div>
