@@ -7,6 +7,7 @@ import {
   type SiteContent,
   type SiteEducation,
   type SiteExperience,
+  type SiteTool,
 } from "@/lib/site-content";
 
 function csv(value: string[]) {
@@ -66,6 +67,13 @@ export default function BackendContentEditor() {
     setContent((prev) => ({
       ...prev,
       education: prev.education.map((item, i) => (i === index ? { ...item, ...patch } : item)),
+    }));
+  }
+
+  function updateTool(index: number, patch: Partial<SiteTool>) {
+    setContent((prev) => ({
+      ...prev,
+      tools: prev.tools.map((item, i) => (i === index ? { ...item, ...patch } : item)),
     }));
   }
 
