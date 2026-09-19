@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Plus, Save, Sparkles, Trash2 } from "lucide-react";
+import { createClient } from "@supabase/supabase-js";
+import { Check, LoaderCircle, Plus, Save, Sparkles, Trash2, Upload } from "lucide-react";
 import {
   defaultSiteContent,
   type SiteContent,
@@ -21,9 +22,57 @@ function fromCsv(value: string) {
     .filter(Boolean);
 }
 
+const publicUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://bgrpvjuvghdjbxmljtgm.supabase.co";
+const publicAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_WheOVPSgKqPTXiHuD1uhXA_S4Vubljo";
+const browserSupabase = createClient(publicUrl, publicAnonKey);
+
+function mergeSiteContent(value: Partial<SiteContent> | null | undefined): SiteContent {
+  if (!value) return defaultSiteContent;
+  return {
+    ...defaultSiteContent,
+    ...value,
+    hero: { ...defaultSiteContent.hero, ...(value.hero || {}) },
+    portfolio: { ...defaultSiteContent.portfolio, ...(value.portfolio || {}) },
+    profile: { ...defaultSiteContent.profile, ...(value.profile || {}) },
+    contact: { ...defaultSiteContent.contact, ...(value.contact || {}) },
+    tools: value.tools || defaultSiteContent.tools,
+    coreSkills: value.coreSkills || defaultSiteContent.coreSkills,
+    aiSkills: value.aiSkills || defaultSiteContent.aiSkills,
+    experience: value.experience || defaultSiteContent.experience,
+    education: value.education || defaultSiteContent.education,
+  };
+}
+
+async function optimizeHeroFile(file: File, mode: "light" | "dark") {
+  const bitmap = await createImageBitmap(file);
+  const maxWidth = 1400;
+  const scale = Math.min(1, maxWidth / bitmap.width);
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d", { alpha: true });
+  if (!context) throw new Error("Could not optimize this image.");
+
+  context.clearRect(0, 0, width, height);
+  context.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, "image/webp", 0.9),
+  );
+  if (!blob) throw new Error("Could not optimize this image.");
+
+  return new File([blob], "hero-" + mode + "-" + Date.now() + ".webp", {
+    type: "image/webp",
+  });
+}
+
 export default function BackendContentEditor() {
   const [content, setContent] = useState<SiteContent>(defaultSiteContent);
   const [busy, setBusy] = useState(false);
+  const [heroBusy, setHeroBusy] = useState<"light" | "dark" | null>(null);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -34,21 +83,75 @@ export default function BackendContentEditor() {
     const response = await fetch("/api/backend/content", { cache: "no-store" });
     if (!response.ok) return;
     const data = await response.json();
-    if (data.content) setContent(data.content);
+    if (data.content) setContent(mergeSiteContent(data.content));
+  }
+
+  async function saveContent(nextContent: SiteContent, successMessage = "Website content updated.") {
+    const response = await fetch("/api/backend/content", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: nextContent }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Save failed.");
+    setMessage(successMessage);
+  }
+
+  async function uploadHero(mode: "light" | "dark", file: File | null) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setMessage("Please choose an image file.");
+      return;
+    }
+
+    setHeroBusy(mode);
+    setMessage(mode === "light" ? "Optimizing light photo…" : "Optimizing dark photo…");
+
+    try {
+      const optimized = await optimizeHeroFile(file, mode);
+      const signedResponse = await fetch("/api/backend/hero-upload-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode, fileName: optimized.name }),
+      });
+      const signed = await signedResponse.json();
+      if (!signedResponse.ok) throw new Error(signed.error || "Could not prepare image upload.");
+
+      const { error } = await browserSupabase.storage
+        .from(signed.bucket)
+        .uploadToSignedUrl(signed.path, signed.token, optimized, {
+          contentType: "image/webp",
+          cacheControl: "31536000",
+        });
+      if (error) throw error;
+
+      const nextContent: SiteContent = {
+        ...content,
+        hero: {
+          ...content.hero,
+          ...(mode === "light"
+            ? { lightImage: signed.publicUrl }
+            : { darkImage: signed.publicUrl }),
+        },
+      };
+
+      setContent(nextContent);
+      await saveContent(
+        nextContent,
+        (mode === "light" ? "Light" : "Dark") + " homepage photo updated.",
+      );
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Photo upload failed.");
+    } finally {
+      setHeroBusy(null);
+    }
   }
 
   async function save() {
     setBusy(true);
     setMessage("");
     try {
-      const response = await fetch("/api/backend/content", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Save failed.");
-      setMessage("Website content updated.");
+      await saveContent(content);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Save failed.");
     } finally {
@@ -97,6 +200,58 @@ export default function BackendContentEditor() {
           <label>Main title<input value={content.hero.title1} onChange={(e) => setContent({ ...content, hero: { ...content.hero, title1: e.target.value } })} /></label>
           <label>Second title<input value={content.hero.title2} onChange={(e) => setContent({ ...content, hero: { ...content.hero, title2: e.target.value } })} /></label>
           <label>Intro<textarea rows={4} value={content.hero.intro} onChange={(e) => setContent({ ...content, hero: { ...content.hero, intro: e.target.value } })} /></label>
+
+          <div className="admin-hero-images">
+            <div className="admin-hero-image-box">
+              <div className="admin-hero-preview light">
+                <img src={content.hero.lightImage || "/hero-light.webp"} alt="Light homepage portrait preview" />
+              </div>
+              <div>
+                <strong>White mode photo</strong>
+                <span>Upload → auto optimize → auto side blur on website</span>
+              </div>
+              <label className="admin-hero-upload">
+                {heroBusy === "light" ? <LoaderCircle className="spin" size={15} /> : <Upload size={15} />}
+                {heroBusy === "light" ? "Optimizing…" : "Replace photo"}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/avif"
+                  disabled={Boolean(heroBusy)}
+                  onChange={(event) => {
+                    const picked = event.target.files?.[0] || null;
+                    void uploadHero("light", picked);
+                    event.currentTarget.value = "";
+                  }}
+                />
+              </label>
+            </div>
+
+            <div className="admin-hero-image-box">
+              <div className="admin-hero-preview dark">
+                <img src={content.hero.darkImage || "/hero-dark.webp"} alt="Dark homepage portrait preview" />
+              </div>
+              <div>
+                <strong>Black mode photo</strong>
+                <span>Upload → auto optimize → auto side blur on website</span>
+              </div>
+              <label className="admin-hero-upload">
+                {heroBusy === "dark" ? <LoaderCircle className="spin" size={15} /> : <Upload size={15} />}
+                {heroBusy === "dark" ? "Optimizing…" : "Replace photo"}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/avif"
+                  disabled={Boolean(heroBusy)}
+                  onChange={(event) => {
+                    const picked = event.target.files?.[0] || null;
+                    void uploadHero("dark", picked);
+                    event.currentTarget.value = "";
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+
+          <small>Just choose the photo. No code, crop or optimization needed. Transparent PNG is supported.</small>
         </div>
 
         <div className="admin-content-card">
