@@ -36,6 +36,12 @@ export type SiteContent = {
     kicker: string;
     title: string;
     description: string;
+    toolsKicker: string;
+    toolsTitle: string;
+    experienceKicker: string;
+    experienceTitle: string;
+    educationKicker: string;
+    educationTitle: string;
   };
   tools: SiteTool[];
   coreSkills: string[];
@@ -69,6 +75,12 @@ export const defaultSiteContent: SiteContent = {
     title: "More than a gallery.\nA working creative profile.",
     description:
       "Graphic designer and video editor focused on social content, brand identity, company profiles, print materials, reels and motion-led visual storytelling.",
+    toolsKicker: "Creative toolkit",
+    toolsTitle: "Tools I work with",
+    experienceKicker: "Professional timeline",
+    experienceTitle: "Work experience",
+    educationKicker: "Education & training",
+    educationTitle: "Built through practice",
   },
   tools: [
     { code: "Ps", name: "Adobe Photoshop", use: "Social design, image editing, compositing", icon: "image" },
