@@ -12,6 +12,8 @@ create table if not exists public.projects (
   gallery_urls text[] default '{}',
   video_url text,
   youtube_url text,
+  source_url text,
+  source_kind text not null default 'upload' check (source_kind in ('upload','youtube','drive','direct','embed')),
   year integer,
   featured boolean not null default false,
   published boolean not null default false,
