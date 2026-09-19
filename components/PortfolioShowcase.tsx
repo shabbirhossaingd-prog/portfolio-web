@@ -82,14 +82,27 @@ function driveFileId(url?: string | null) {
   }
 }
 
+function driveResourceKey(url?: string | null) {
+  if (!url) return "";
+  try {
+    return new URL(url).searchParams.get("resourcekey") || "";
+  } catch {
+    return "";
+  }
+}
+
 function drivePreview(url?: string | null) {
   const id = driveFileId(url);
-  return id ? "https://drive.google.com/file/d/" + id + "/preview" : null;
+  if (!id) return null;
+  const resourceKey = driveResourceKey(url);
+  return "https://drive.google.com/file/d/" + id + "/preview" + (resourceKey ? "?resourcekey=" + encodeURIComponent(resourceKey) : "");
 }
 
 function driveThumb(url?: string | null) {
   const id = driveFileId(url);
-  return id ? "https://drive.google.com/thumbnail?id=" + id + "&sz=w1200" : null;
+  if (!id) return null;
+  const resourceKey = driveResourceKey(url);
+  return "https://drive.google.com/thumbnail?id=" + id + "&sz=w2000" + (resourceKey ? "&resourcekey=" + encodeURIComponent(resourceKey) : "");
 }
 
 function itemCover(item: PortfolioItem) {
@@ -109,13 +122,13 @@ function PinMedia({ item, index }: { item: PortfolioItem; index: number }) {
         muted
         playsInline
         preload="metadata"
-        aria-label={item.title}
+        aria-label={item.title || "Portfolio video"}
       />
     );
   }
 
   if (cover) {
-    return <img src={cover} alt={item.title} loading="lazy" />;
+    return <img src={cover} alt={item.title || category} loading="lazy" />;
   }
 
   return (
@@ -130,13 +143,18 @@ function FullMedia({ item }: { item: PortfolioItem }) {
   const videoId = youtubeId(item.source_url || item.youtube_url);
 
   if (item.source_kind === "drive" && item.source_url) {
+    if (item.type === "design") {
+      const image = driveThumb(item.source_url);
+      if (image) return <img className="portfolio-full-image" src={image} alt={item.title || "Portfolio artwork"} />;
+    }
+
     const preview = drivePreview(item.source_url);
     if (preview) {
       return (
         <iframe
           className="portfolio-full-drive"
           src={preview}
-          title={item.title}
+          title={item.title || "Portfolio video"}
           allow="autoplay; encrypted-media; picture-in-picture"
           allowFullScreen
         />
@@ -318,7 +336,7 @@ export default function PortfolioShowcase({
                   viewport={{ once: true, margin: "-40px" }}
                   transition={{ duration: 0.38, delay: Math.min(index * 0.025, 0.18) }}
                 >
-                  <button type="button" className="portfolio-pin-media" onClick={() => openItem(item)} aria-label={"Open " + item.title}>
+                  <button type="button" className="portfolio-pin-media" onClick={() => openItem(item)} aria-label={item.title ? "Open " + item.title : "Open portfolio item"}>
                     <PinMedia item={item} index={index} />
                     <span className="portfolio-pin-shade" />
                     {isVideo && <span className="portfolio-pin-play"><Play size={15} fill="currentColor" /> Play</span>}
@@ -328,9 +346,9 @@ export default function PortfolioShowcase({
                   <div className="portfolio-pin-meta">
                     <div>
                       <span>{resolveFilter(item)}{item.year ? " · " + item.year : ""}</span>
-                      <h3>{item.title}</h3>
+                      {item.title && <h3>{item.title}</h3>}
                     </div>
-                    <button type="button" onClick={() => openItem(item)} aria-label={"Open " + item.title}>
+                    <button type="button" onClick={() => openItem(item)} aria-label={item.title ? "Open " + item.title : "Open portfolio item"}>
                       <Maximize2 size={15} />
                     </button>
                   </div>
@@ -350,7 +368,7 @@ export default function PortfolioShowcase({
             exit={{ opacity: 0 }}
             role="dialog"
             aria-modal="true"
-            aria-label={selected.title}
+            aria-label={selected.title || "Portfolio full view"}
             onMouseDown={(event) => {
               if (event.target === event.currentTarget) setOpen(false);
             }}
@@ -383,7 +401,7 @@ export default function PortfolioShowcase({
                   {resolveFilter(selected)}
                   {selectedIndex >= 0 ? " · " + String(selectedIndex + 1).padStart(2, "0") + "/" + String(filtered.length).padStart(2, "0") : ""}
                 </span>
-                <strong>{selected.title}</strong>
+                {selected.title && <strong>{selected.title}</strong>}
               </div>
             </motion.div>
           </motion.div>
