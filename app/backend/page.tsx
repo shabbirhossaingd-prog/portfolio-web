@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import BackendContentEditor from "@/components/BackendContentEditor";
 import {
@@ -52,6 +52,9 @@ const browserSupabase =
 
 export default function BackendPage() {
   const [checking, setChecking] = useState(true);
+  const [activePanel, setActivePanel] = useState<"dashboard" | "visual" | "video">("dashboard");
+  const contentEditorRef = useRef<HTMLDivElement | null>(null);
+  const uploadPanelRef = useRef<HTMLDivElement | null>(null);
   const [configured, setConfigured] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const [email, setEmail] = useState("");
@@ -73,6 +76,66 @@ export default function BackendPage() {
     () => folders.find((item) => item.label === folder) || folders[0],
     [folder],
   );
+
+  const visibleFolders = useMemo(() => {
+    if (activePanel === "visual") return folders.filter((item) => item.kind === "image");
+    if (activePanel === "video") return folders.filter((item) => item.kind === "video");
+    return folders;
+  }, [activePanel]);
+
+  const videoExtensions = new Set(["mp4", "webm", "mov", "m4v", "ogg", "ogv"]);
+  const imageExtensions = new Set(["jpg", "jpeg", "png", "webp", "gif", "avif"]);
+
+  function extensionOf(name: string) {
+    return name.split(".").pop()?.toLowerCase() || "";
+  }
+
+  function isSupportedVideo(file: File) {
+    return file.type.startsWith("video/") || videoExtensions.has(extensionOf(file.name));
+  }
+
+  function isSupportedImage(file: File) {
+    return file.type.startsWith("image/") || imageExtensions.has(extensionOf(file.name));
+  }
+
+  function inferredContentType(file: File) {
+    if (file.type) return file.type;
+
+    const extension = extensionOf(file.name);
+    const types: Record<string, string> = {
+      mp4: "video/mp4",
+      webm: "video/webm",
+      mov: "video/quicktime",
+      m4v: "video/x-m4v",
+      ogg: "video/ogg",
+      ogv: "video/ogg",
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png",
+      webp: "image/webp",
+      gif: "image/gif",
+      avif: "image/avif",
+    };
+
+    return types[extension] || "application/octet-stream";
+  }
+
+  function openPanel(panel: "dashboard" | "visual" | "video") {
+    setActivePanel(panel);
+    setStatus("");
+    setFile(null);
+
+    if (panel === "visual") setFolder("Posters");
+    if (panel === "video") setFolder("Videos");
+
+    requestAnimationFrame(() => {
+      if (panel === "dashboard") {
+        contentEditorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        uploadPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  }
 
   useEffect(() => {
     checkSession();
@@ -161,12 +224,12 @@ export default function BackendPage() {
     }
 
     const shouldBeVideo = selectedFolder.kind === "video";
-    if (shouldBeVideo && !file.type.startsWith("video/")) {
-      setStatus("This folder needs a video file.");
+    if (shouldBeVideo && !isSupportedVideo(file)) {
+      setStatus("Unsupported video. Use MP4, WebM, MOV, M4V or OGG.");
       return;
     }
-    if (!shouldBeVideo && !file.type.startsWith("image/")) {
-      setStatus("This folder needs an image file.");
+    if (!shouldBeVideo && !isSupportedImage(file)) {
+      setStatus("Unsupported image. Use JPG, PNG, WebP, GIF or AVIF.");
       return;
     }
 
@@ -191,7 +254,7 @@ export default function BackendPage() {
       const { error: uploadError } = await browserSupabase.storage
         .from(signed.bucket)
         .uploadToSignedUrl(signed.path, signed.token, file, {
-          contentType: file.type || undefined,
+          contentType: inferredContentType(file),
         });
 
       if (uploadError) throw uploadError;
@@ -291,9 +354,9 @@ export default function BackendPage() {
       <aside className="admin-sidebar">
         <a className="admin-brand" href="/">SA</a>
         <div className="admin-nav">
-          <button className="active"><LayoutDashboard size={18} /> Dashboard</button>
-          <button><ImageIcon size={18} /> Visual work</button>
-          <button><Video size={18} /> Video work</button>
+          <button className={activePanel === "dashboard" ? "active" : ""} onClick={() => openPanel("dashboard")}><LayoutDashboard size={18} /> Dashboard</button>
+          <button className={activePanel === "visual" ? "active" : ""} onClick={() => openPanel("visual")}><ImageIcon size={18} /> Visual work</button>
+          <button className={activePanel === "video" ? "active" : ""} onClick={() => openPanel("video")}><Video size={18} /> Video work</button>
         </div>
         <button className="admin-logout" onClick={logout}><LogOut size={17} /> Log out</button>
       </aside>
@@ -312,9 +375,11 @@ export default function BackendPage() {
           The public gallery only adds rounded corners; full view opens the real original media.
         </div>
 
-        <BackendContentEditor />
+        <div ref={contentEditorRef}>
+          <BackendContentEditor />
+        </div>
 
-        <div className="admin-layout">
+        <div className="admin-layout" ref={uploadPanelRef}>
           <div className="admin-panel">
             <div className="admin-panel-title">
               <h2>Add portfolio item</h2>
@@ -322,7 +387,7 @@ export default function BackendPage() {
             </div>
 
             <div className="admin-folder-grid" aria-label="Upload folder">
-              {folders.map((item) => (
+              {visibleFolders.map((item) => (
                 <button
                   key={item.label}
                   type="button"
@@ -359,7 +424,7 @@ export default function BackendPage() {
                       setFile(null);
                     }}
                   >
-                    {folders.map((item) => <option key={item.label}>{item.label}</option>)}
+                    {visibleFolders.map((item) => <option key={item.label}>{item.label}</option>)}
                   </select>
                 </label>
 
@@ -391,13 +456,13 @@ export default function BackendPage() {
                   {file
                     ? Math.max(0.01, file.size / 1024 / 1024).toFixed(2) + " MB · original ratio kept"
                     : selectedFolder.kind === "video"
-                      ? "MP4 / WebM / supported video — no forced 4:5 crop"
-                      : "JPG / PNG / WebP — no forced crop"}
+                      ? "MP4 / WebM / MOV / M4V / OGG — original ratio kept"
+                      : "JPG / PNG / WebP / GIF / AVIF — no forced crop"}
                 </span>
                 <span className="upload-choose">Choose file</span>
                 <input
                   type="file"
-                  accept={selectedFolder.kind === "video" ? "video/*" : "image/*"}
+                  accept={selectedFolder.kind === "video" ? "video/*,.mp4,.webm,.mov,.m4v,.ogg,.ogv" : "image/*,.jpg,.jpeg,.png,.webp,.gif,.avif"}
                   onChange={(event) => setFile(event.target.files?.[0] || null)}
                 />
               </label>
