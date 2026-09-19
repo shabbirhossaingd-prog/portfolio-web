@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowUpRight,
@@ -43,7 +43,7 @@ const faqs = [
   ["Can you work remotely?", "Yes. I am based in Dhaka, Bangladesh and work with remote projects and collaborations."],
 ];
 
-function Tip({ children, text, className = "" }: { children: React.ReactNode; text: string; className?: string }) {
+function Tip({ children, text, className = "" }: { children: ReactNode; text: string; className?: string }) {
   return <span className={"hover-tip " + className} data-tip={text}>{children}</span>;
 }
 
@@ -53,7 +53,11 @@ export default function Home() {
 
   useEffect(() => {
     const saved = window.localStorage.getItem("portfolio-theme");
-    if (saved === "dark" || saved === "light") setTheme(saved);
+    if (saved === "dark" || saved === "light") {
+      setTheme(saved);
+      return;
+    }
+    setTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
   }, []);
 
   const changeTheme = (value: "light" | "dark") => {
@@ -73,10 +77,10 @@ export default function Home() {
         </nav>
         <div className="nav-actions">
           <div className="theme-switch" aria-label="Theme selector">
-            <button className={theme === "light" ? "active" : ""} onClick={() => changeTheme("light")} aria-label="Light mode">
+            <button className={theme === "light" ? "active" : ""} onClick={() => changeTheme("light")} aria-label="Light mode" aria-pressed={theme === "light"}>
               <Sun size={14} />
             </button>
-            <button className={theme === "dark" ? "active" : ""} onClick={() => changeTheme("dark")} aria-label="Dark mode">
+            <button className={theme === "dark" ? "active" : ""} onClick={() => changeTheme("dark")} aria-label="Dark mode" aria-pressed={theme === "dark"}>
               <Moon size={14} />
             </button>
           </div>
@@ -115,9 +119,9 @@ export default function Home() {
           />
           <div className="portrait-edge-fade" />
           <div className="portrait-mode">
-            <button className={theme === "light" ? "active" : ""} onClick={() => changeTheme("light")}>White</button>
+            <button className={theme === "light" ? "active" : ""} onClick={() => changeTheme("light")} aria-pressed={theme === "light"}>White</button>
             <span>/</span>
-            <button className={theme === "dark" ? "active" : ""} onClick={() => changeTheme("dark")}>Black</button>
+            <button className={theme === "dark" ? "active" : ""} onClick={() => changeTheme("dark")} aria-pressed={theme === "dark"}>Black</button>
           </div>
         </div>
 
