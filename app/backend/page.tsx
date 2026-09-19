@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
+import BackendContentEditor from "@/components/BackendContentEditor";
 import {
   Check,
   Film,
@@ -16,7 +17,7 @@ import {
   Video,
 } from "lucide-react";
 
-type FolderLabel = "Posters" | "Reels" | "Videos" | "Logos" | "Company Profiles" | "Animations";
+type FolderLabel = "Posters" | "Reels" | "Videos" | "AI Video" | "Logos" | "Company Profiles" | "Animations";
 
 type ProjectRow = {
   id: string;
@@ -38,6 +39,7 @@ const folders: Array<{
   { label: "Posters", slug: "posters", kind: "image" },
   { label: "Reels", slug: "reels", kind: "video" },
   { label: "Videos", slug: "videos", kind: "video" },
+  { label: "AI Video", slug: "ai-video", kind: "video" },
   { label: "Logos", slug: "logos", kind: "image" },
   { label: "Company Profiles", slug: "company-profiles", kind: "image" },
   { label: "Animations", slug: "animations", kind: "video" },
@@ -309,6 +311,8 @@ export default function BackendPage() {
           <strong>Original ratio is preserved.</strong> A 9:16 reel stays 9:16, a 4:5 poster stays 4:5, and wide video stays wide.
           The public gallery only adds rounded corners; full view opens the real original media.
         </div>
+
+        <BackendContentEditor />
 
         <div className="admin-layout">
           <div className="admin-panel">
