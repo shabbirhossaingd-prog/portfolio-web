@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft, ArrowRight, Maximize2, Play, X } from "lucide-react";
-import { designProjects, motionProjects } from "@/lib/portfolio";
 
 type FilterName = "All Work" | "Posters" | "Reels" | "Videos" | "Logos" | "Company Profiles" | "Animations";
 
@@ -33,24 +32,6 @@ const filters: FilterName[] = [
   "Animations",
 ];
 
-const fallbackItems: PortfolioItem[] = [
-  ...designProjects.map((project, index) => ({
-    id: "design-" + index,
-    title: project.title,
-    type: "design" as const,
-    category: project.category,
-    description: project.description,
-    year: project.year,
-  })),
-  ...motionProjects.map((project, index) => ({
-    id: "motion-" + index,
-    title: project.title,
-    type: "video" as const,
-    category: project.category,
-    description: project.description,
-    year: project.year,
-  })),
-];
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -151,7 +132,7 @@ function FullMedia({ item }: { item: PortfolioItem }) {
 }
 
 export default function PortfolioShowcase() {
-  const [items, setItems] = useState<PortfolioItem[]>(fallbackItems);
+  const [items, setItems] = useState<PortfolioItem[]>([]);
   const [activeFilter, setActiveFilter] = useState<FilterName>("All Work");
   const [selectedId, setSelectedId] = useState("");
   const [open, setOpen] = useState(false);
@@ -169,14 +150,28 @@ export default function PortfolioShowcase() {
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false });
 
-      if (cancelled || error || !data?.length) return;
-      setItems(data as PortfolioItem[]);
+      if (cancelled) return;
+      if (error) {
+        setItems([]);
+        return;
+      }
+      setItems((data || []) as PortfolioItem[]);
     }
 
     loadProjects();
 
+    const channel = supabase
+      ?.channel("portfolio-public-sync")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "projects" },
+        () => loadProjects(),
+      )
+      .subscribe();
+
     return () => {
       cancelled = true;
+      if (channel && supabase) supabase.removeChannel(channel);
     };
   }, []);
 
@@ -291,11 +286,7 @@ export default function PortfolioShowcase() {
               );
             })}
           </motion.div>
-        ) : (
-          <motion.div className="portfolio-no-results" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            No published work in this category yet.
-          </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
 
       <AnimatePresence>
