@@ -1,33 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isAdminRequest } from "@/lib/admin-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { ADMIN_COOKIE } from "@/lib/admin-auth";
+import { callBackendEdge } from "@/lib/backend-edge";
 import { defaultSiteContent } from "@/lib/site-content";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
-  if (!isAdminRequest(request)) {
+  const token = request.cookies.get(ADMIN_COOKIE)?.value || null;
+  if (!token) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
-  try {
-    const supabase = getSupabaseAdmin();
-    const { data, error } = await supabase
-      .from("site_content")
-      .select("value")
-      .eq("key", "site")
-      .maybeSingle();
-
-    if (error) throw error;
-    return NextResponse.json({ content: data?.value || defaultSiteContent });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Could not load site content.";
-    return NextResponse.json({ error: message }, { status: 500 });
+  const result = await callBackendEdge<{ content?: unknown }>("get-content", token);
+  if (!result.ok) {
+    return NextResponse.json(result.data, { status: result.status });
   }
+
+  return NextResponse.json({
+    content: result.data.content || defaultSiteContent,
+  });
 }
 
 export async function PUT(request: NextRequest) {
-  if (!isAdminRequest(request)) {
+  const token = request.cookies.get(ADMIN_COOKIE)?.value || null;
+  if (!token) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
@@ -36,18 +32,9 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Content is required." }, { status: 400 });
   }
 
-  try {
-    const supabase = getSupabaseAdmin();
-    const { error } = await supabase.from("site_content").upsert({
-      key: "site",
-      value: body.content,
-      updated_at: new Date().toISOString(),
-    });
+  const result = await callBackendEdge("save-content", token, {
+    content: body.content,
+  });
 
-    if (error) throw error;
-    return NextResponse.json({ ok: true });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Could not save site content.";
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
+  return NextResponse.json(result.data, { status: result.status });
 }
