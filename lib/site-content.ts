@@ -87,6 +87,7 @@ export const defaultSiteContent: SiteContent = {
     { code: "Ai", name: "Adobe Illustrator", use: "Brand identity, vector design, logo work", icon: "pen" },
     { code: "Pr", name: "Adobe Premiere Pro", use: "Video editing, reels, promotional cuts", icon: "video" },
     { code: "Ae", name: "Adobe After Effects", use: "Motion graphics, type animation, compositing", icon: "sparkles" },
+    { code: "Cc", name: "CapCut", use: "Fast social edits, reels and short-form video", icon: "video" },
   ],
   coreSkills: [
     "Graphic Design",
@@ -95,8 +96,9 @@ export const defaultSiteContent: SiteContent = {
     "Concepting",
     "Teamwork",
     "Communication",
+    "Vibe Coding",
   ],
-  aiSkills: ["GPT", "Gemini", "Freepik", "Envato", "Cloud", "Antigravity"],
+  aiSkills: ["GPT", "Gemini", "Google Flow", "Freepik", "Envato", "Cloud", "Antigravity", "Vibe Coding"],
   experience: [
     {
       company: "Apon.uk",
