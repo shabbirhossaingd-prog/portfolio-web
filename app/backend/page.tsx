@@ -121,7 +121,7 @@ export default function BackendPage() {
       setPassword("");
       await loadProjects();
     } catch {
-      setLoginError("Could not connect to the admin server.");
+      setLoginError("Could not connect to the backend service.");
     } finally {
       setLoginBusy(false);
     }
@@ -227,7 +227,7 @@ export default function BackendPage() {
       <main className="admin-login-shell">
         <div className="admin-login-card admin-loading-card">
           <LoaderCircle className="spin" size={24} />
-          <span>Checking admin session…</span>
+          <span>Checking backend session…</span>
         </div>
       </main>
     );
