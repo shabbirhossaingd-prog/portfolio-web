@@ -3849,3 +3849,72 @@ button, input, select, textarea { font: inherit; }
     display: none;
   }
 }
+
+
+/* Hero portrait: no side clipping or side fade; only soft bottom blend */
+.hero-portrait-stage {
+  overflow: visible !important;
+}
+
+.hero-portrait-transform,
+.hero-portrait-blur-wrap,
+.hero-portrait-motion {
+  overflow: visible !important;
+}
+
+.portrait-edge-fade {
+  inset: -2px !important;
+  background: linear-gradient(
+    0deg,
+    var(--bg) 0%,
+    color-mix(in srgb, var(--bg) 72%, transparent) 6%,
+    color-mix(in srgb, var(--bg) 26%, transparent) 13%,
+    transparent 24%
+  ) !important;
+}
+
+.hero-portrait-main {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 80%,
+    rgba(0,0,0,.98) 87%,
+    rgba(0,0,0,.72) 93%,
+    transparent 100%
+  ) !important;
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 80%,
+    rgba(0,0,0,.98) 87%,
+    rgba(0,0,0,.72) 93%,
+    transparent 100%
+  ) !important;
+}
+
+.hero-portrait-blur {
+  opacity: .11 !important;
+  filter: grayscale(1) blur(18px) !important;
+  transform: scale(1.035) !important;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 68%,
+    rgba(0,0,0,.18) 78%,
+    rgba(0,0,0,.72) 91%,
+    #000 100%
+  ) !important;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 68%,
+    rgba(0,0,0,.18) 78%,
+    rgba(0,0,0,.72) 91%,
+    #000 100%
+  ) !important;
+}
+
+.theme-dark .hero-portrait-blur,
+.theme-light .hero-portrait-blur {
+  opacity: .11 !important;
+}
