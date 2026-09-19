@@ -238,7 +238,6 @@ export default function Home() {
                 {siteContent.aiSkills.map((skill) => <span key={skill}>{skill}</span>)}
               </div>
             </div>
-/div>
           </section>
 
           <section className="work-experience-panel" id="experience">
