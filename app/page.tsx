@@ -192,8 +192,8 @@ export default function Home() {
           <section className="tool-experience-panel" id="tools">
             <div className="profile-panel-head">
               <div>
-                <span>Creative toolkit</span>
-                <h3>Tools I work with</h3>
+                <span>{siteContent.profile.toolsKicker}</span>
+                <h3>{siteContent.profile.toolsTitle}</h3>
               </div>
               <Layers3 size={22} />
             </div>
@@ -243,8 +243,8 @@ export default function Home() {
           <section className="work-experience-panel" id="experience">
             <div className="profile-panel-head">
               <div>
-                <span>Professional timeline</span>
-                <h3>Work experience</h3>
+                <span>{siteContent.profile.experienceKicker}</span>
+                <h3>{siteContent.profile.experienceTitle}</h3>
               </div>
               <BriefcaseBusiness size={22} />
             </div>
@@ -282,8 +282,8 @@ export default function Home() {
         <section className="education-panel">
           <div className="profile-panel-head">
             <div>
-              <span>Education & training</span>
-              <h3>Built through practice</h3>
+              <span>{siteContent.profile.educationKicker}</span>
+              <h3>{siteContent.profile.educationTitle}</h3>
             </div>
             <GraduationCap size={22} />
           </div>
