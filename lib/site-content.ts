@@ -28,6 +28,12 @@ export type SiteContent = {
     intro: string;
     lightImage?: string;
     darkImage?: string;
+    lightScale?: number;
+    lightX?: number;
+    lightY?: number;
+    darkScale?: number;
+    darkX?: number;
+    darkY?: number;
   };
   portfolio: {
     kicker: string;
@@ -67,6 +73,12 @@ export const defaultSiteContent: SiteContent = {
       "I’m Shabbir Hossain Azhaf — a graphic designer and video editor creating clean brand visuals, social design and motion-led stories.",
     lightImage: "/hero-light.webp",
     darkImage: "/hero-dark.webp",
+    lightScale: 1.3,
+    lightX: 0,
+    lightY: 0,
+    darkScale: 1.3,
+    darkX: 0,
+    darkY: 0,
   },
   portfolio: {
     kicker: "Selected Work",
