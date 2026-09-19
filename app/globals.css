@@ -1211,10 +1211,22 @@ button, input, select, textarea { font: inherit; }
 }
 
 .theme-dark .hero-portrait-main {
+  width: 91%;
+  height: 91%;
+  left: 5.2%;
+  right: auto;
+  top: auto;
+  bottom: 0;
   filter: grayscale(1) contrast(1.08) brightness(.98);
 }
 
 .theme-light .hero-portrait-main {
+  width: 92%;
+  height: 92%;
+  left: 4%;
+  right: auto;
+  top: auto;
+  bottom: 0;
   filter: grayscale(1) contrast(1.04) brightness(1.01);
 }
 
@@ -2433,5 +2445,44 @@ button, input, select, textarea { font: inherit; }
   .admin-login-card {
     padding: 26px 20px;
     border-radius: 22px;
+  }
+}
+
+
+/* Hero portrait framing: keep full hair visible and optically center both themes */
+.hero-portrait-stage {
+  overflow: visible;
+}
+
+.theme-dark .hero-portrait-blur {
+  opacity: .07;
+  transform: scale(1.015);
+}
+
+.theme-light .hero-portrait-blur {
+  opacity: .06;
+  transform: scale(1.015);
+}
+
+@media (max-width: 1080px) {
+  .theme-dark .hero-portrait-main {
+    width: 90%;
+    height: 90%;
+    left: 5.5%;
+  }
+
+  .theme-light .hero-portrait-main {
+    width: 91%;
+    height: 91%;
+    left: 4.5%;
+  }
+}
+
+@media (max-width: 760px) {
+  .theme-dark .hero-portrait-main,
+  .theme-light .hero-portrait-main {
+    width: 90%;
+    height: 90%;
+    left: 5%;
   }
 }
