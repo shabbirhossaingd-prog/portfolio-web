@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
 import { motion } from "framer-motion";
+import { createClient } from "@supabase/supabase-js";
 import {
   ArrowUpRight,
   BriefcaseBusiness,
@@ -23,70 +24,21 @@ import {
 } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 import PortfolioShowcase from "@/components/PortfolioShowcase";
+import { defaultSiteContent, type SiteContent } from "@/lib/site-content";
 
 const heroLight = "/hero-light.webp";
 const heroDark = "/hero-dark.webp";
 
-const tools = [
-  { code: "Ps", name: "Adobe Photoshop", use: "Social design, image editing, compositing", icon: ImageIcon },
-  { code: "Ai", name: "Adobe Illustrator", use: "Brand identity, vector design, logo work", icon: PenTool },
-  { code: "Pr", name: "Adobe Premiere Pro", use: "Video editing, reels, promotional cuts", icon: Clapperboard },
-  { code: "Ae", name: "Adobe After Effects", use: "Motion graphics, type animation, compositing", icon: Sparkles },
-];
+const publicUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const publicAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const contentClient = publicUrl && publicAnonKey ? createClient(publicUrl, publicAnonKey) : null;
 
-const coreSkills = [
-  "Graphic Design",
-  "Video Editing",
-  "Wireframing",
-  "Concepting",
-  "Teamwork",
-  "Communication",
-];
-
-const experience = [
-  {
-    company: "Apon.uk",
-    role: "Graphic Designer",
-    period: "04 Jun 2026 — Present",
-    current: true,
-    note: "Creating brand, campaign and digital visual assets across ongoing projects.",
-  },
-  {
-    company: "Kreatech",
-    role: "Designer & Editor",
-    period: "2023 — Present",
-    current: true,
-    note: "Print materials, social media design, video editing and visual storytelling.",
-  },
-  {
-    company: "Silk Road International",
-    role: "Graphic Designer",
-    period: "Feb 2026 — Jun 2026",
-    current: false,
-    note: "Worked across day-to-day graphic design and communication materials.",
-  },
-  {
-    company: "Creative IT Institute",
-    role: "Graphic Designer · Internship",
-    period: "2023",
-    current: false,
-    note: "Hands-on work in social media design and branding.",
-  },
-  {
-    company: "Fiverr",
-    role: "Remote Graphic Designer",
-    period: "2022 — 2023 · 6 months",
-    current: false,
-    note: "Delivered freelance graphic design work including social media graphics.",
-  },
-];
-
-const education = [
-  { title: "Graphic Design", place: "Creative IT Institute", meta: "2022 — 2023 · 8-month training" },
-  { title: "Video Editing", place: "Creative IT Institute", meta: "2024 · 4-month course" },
-  { title: "College", place: "Tejgaon College", meta: "Academic background" },
-  { title: "BBA · Marketing", place: "Sonargaon University", meta: "2023 — Present" },
-];
+const toolIconMap = {
+  image: ImageIcon,
+  pen: PenTool,
+  video: Clapperboard,
+  sparkles: Sparkles,
+} as const;
 
 function scrollToId(event: MouseEvent<HTMLAnchorElement>, id: string) {
   event.preventDefault();
@@ -100,6 +52,40 @@ function Tip({ children, text, className = "" }: { children: ReactNode; text: st
 
 export default function Home() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [siteContent, setSiteContent] = useState<SiteContent>(defaultSiteContent);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSiteContent() {
+      if (!contentClient) return;
+      const { data, error } = await contentClient
+        .from("site_content")
+        .select("value")
+        .eq("key", "site")
+        .maybeSingle();
+
+      if (!cancelled && !error && data?.value) {
+        setSiteContent(data.value as SiteContent);
+      }
+    }
+
+    loadSiteContent();
+
+    const channel = contentClient
+      ?.channel("site-content-sync")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "site_content" },
+        () => loadSiteContent(),
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      if (channel && contentClient) contentClient.removeChannel(channel);
+    };
+  }, []);
 
   useEffect(() => {
     if (window.location.hash) {
@@ -145,9 +131,9 @@ export default function Home() {
       <section className="mono-hero" id="home">
         <div className="hero-copy-top">
           <motion.span initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .55 }}>
-            <span className="status-dot" /> Available for selected projects
+            <span className="status-dot" /> {siteContent.hero.status}
           </motion.span>
-          <span>Dhaka, Bangladesh · Remote</span>
+          <span>{siteContent.hero.location}</span>
         </div>
 
         <motion.h1
@@ -155,9 +141,9 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: .75, ease: [0.2, 0.8, 0.2, 1] }}
         >
-          <Tip text="Design that communicates before it decorates">Visuals with clarity.</Tip>
+          <Tip text="Design that communicates before it decorates">{siteContent.hero.title1}</Tip>
           <br />
-          <em><Tip text="Motion that adds rhythm, not noise">Motion with character.</Tip></em>
+          <em><Tip text="Motion that adds rhythm, not noise">{siteContent.hero.title2}</Tip></em>
         </motion.h1>
 
         <div className="hero-portrait-stage">
@@ -182,7 +168,7 @@ export default function Home() {
         <div className="hero-bottom">
           <p>
             <Tip text="Personal portfolio statement">
-              I’m Shabbir Hossain Azhaf — a graphic designer and video editor creating clean brand visuals, social design and motion-led stories.
+              {siteContent.hero.intro}
             </Tip>
           </p>
           <div className="hero-links">
@@ -192,17 +178,14 @@ export default function Home() {
         </div>
       </section>
 
-      <PortfolioShowcase />
+      <PortfolioShowcase content={siteContent.portfolio} />
 
       <section className="mono-section profile-section" id="about">
-        <div className="section-kicker"><span>02</span><span>Professional Profile</span></div>
+        <div className="section-kicker"><span>02</span><span>{siteContent.profile.kicker}</span></div>
 
         <div className="profile-intro">
-          <h2>More than a gallery.<br /><em>A working creative profile.</em></h2>
-          <p>
-            Graphic designer and video editor focused on social content, brand identity, company profiles,
-            print materials, reels and motion-led visual storytelling.
-          </p>
+          <h2>{siteContent.profile.title.split("\\n")[0]}<br /><em>{siteContent.profile.title.split("\\n").slice(1).join(" ")}</em></h2>
+          <p>{siteContent.profile.description}</p>
         </div>
 
         <div className="profile-dashboard">
@@ -216,8 +199,8 @@ export default function Home() {
             </div>
 
             <div className="tool-experience-grid">
-              {tools.map((item, index) => {
-                const Icon = item.icon;
+              {siteContent.tools.map((item, index) => {
+                const Icon = toolIconMap[item.icon] || Sparkles;
                 return (
                   <motion.article
                     className="tool-experience-card"
@@ -245,9 +228,17 @@ export default function Home() {
             <div className="core-skill-strip">
               <span className="skill-strip-label"><Users size={15} /> Core skills</span>
               <div>
-                {coreSkills.map((skill) => <span key={skill}>{skill}</span>)}
+                {siteContent.coreSkills.map((skill) => <span key={skill}>{skill}</span>)}
               </div>
             </div>
+
+            <div className="ai-skill-strip">
+              <span className="skill-strip-label"><Sparkles size={15} /> AI workflow</span>
+              <div>
+                {siteContent.aiSkills.map((skill) => <span key={skill}>{skill}</span>)}
+              </div>
+            </div>
+/div>
           </section>
 
           <section className="work-experience-panel" id="experience">
@@ -260,7 +251,7 @@ export default function Home() {
             </div>
 
             <div className="experience-timeline">
-              {experience.map((item, index) => (
+              {siteContent.experience.map((item, index) => (
                 <motion.article
                   className="experience-item"
                   key={item.company + item.period}
@@ -299,7 +290,7 @@ export default function Home() {
           </div>
 
           <div className="education-grid">
-            {education.map((item, index) => (
+            {siteContent.education.map((item, index) => (
               <motion.article
                 key={item.title + item.meta}
                 initial={{ opacity: 0, y: 14 }}
@@ -321,9 +312,9 @@ export default function Home() {
 
       <section className="mono-contact" id="contact">
         <div className="contact-copy">
-          <div className="section-kicker invert"><span>03</span><Tip text="Freelance · Collaboration · Full-time">Let’s work together</Tip></div>
-          <h2>Hiring?<br />Launching something?<br /><em>Send it my way.</em></h2>
-          <p>Use the form for a project, collaboration, freelance request or full-time creative opportunity.</p>
+          <div className="section-kicker invert"><span>03</span><Tip text="Freelance · Collaboration · Full-time">{siteContent.contact.kicker}</Tip></div>
+          <h2>{siteContent.contact.title.split("\\n")[0]}<br />{siteContent.contact.title.split("\\n")[1]}<br /><em>{siteContent.contact.title.split("\\n").slice(2).join(" ")}</em></h2>
+          <p>{siteContent.contact.description}</p>
 
           <div className="social-row">
             <a href="https://www.linkedin.com/in/designerazhaf/" target="_blank" rel="noreferrer"><Linkedin size={17} /> LinkedIn</a>
