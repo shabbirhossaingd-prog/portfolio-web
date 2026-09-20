@@ -215,6 +215,14 @@ export default function BackendPage() {
     return "https://drive.google.com/thumbnail?id=" + id + "&sz=w2000" + (resourceKey ? "&resourcekey=" + encodeURIComponent(resourceKey) : "");
   }
 
+  function isPdfLink(value: string) {
+    try {
+      return /\.pdf$/i.test(new URL(value).pathname);
+    } catch {
+      return /\.pdf(?:$|[?#])/i.test(value);
+    }
+  }
+
   function openPanel(panel: "dashboard" | "visual" | "video") {
     setActivePanel(panel);
     setStatus("");
@@ -736,6 +744,11 @@ export default function BackendPage() {
                     )
                   ) : selectedFolder.kind === "video" ? (
                     <video src={linkedPreview} controls playsInline preload="metadata" />
+                  ) : folder === "Company Profiles" && isPdfLink(linkedPreview) ? (
+                    <iframe
+                      src={linkedPreview + (linkedPreview.includes("#") ? "&" : "#") + "page=1&toolbar=0&navpanes=0&view=FitH"}
+                      title="Linked company profile PDF preview"
+                    />
                   ) : (
                     <img src={linkedPreview} alt="Linked media preview" />
                   )
