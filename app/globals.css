@@ -4230,3 +4230,42 @@ button, input, select, textarea { font: inherit; }
     border-radius: 10px;
   }
 }
+
+
+/* Mobile hero: keep description below theme switch */
+@media (max-width: 760px) {
+  .mono-hero {
+    min-height: 930px !important;
+  }
+
+  .hero-portrait-stage {
+    height: 520px !important;
+    bottom: 190px !important;
+  }
+
+  .portrait-mode {
+    bottom: 14px !important;
+  }
+
+  .hero-bottom {
+    bottom: 26px !important;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .hero-bottom p {
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+}
+
+@media (max-width: 460px) {
+  .mono-hero {
+    min-height: 900px !important;
+  }
+
+  .hero-portrait-stage {
+    height: 470px !important;
+    bottom: 188px !important;
+  }
+}
