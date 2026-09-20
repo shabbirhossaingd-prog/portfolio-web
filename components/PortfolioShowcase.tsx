@@ -109,18 +109,13 @@ function driveDirectMedia(url?: string | null) {
   const id = driveFileId(url);
   if (!id) return null;
   const resourceKey = driveResourceKey(url);
-  const params = new URLSearchParams({
-    id,
-    export: "download",
-    authuser: "0",
-    confirm: "t",
-  });
+  const params = new URLSearchParams({ id });
   if (resourceKey) params.set("resourcekey", resourceKey);
-  return "https://drive.usercontent.google.com/download?" + params.toString();
+  return "/api/media/drive?" + params.toString();
 }
 
 function DriveVideoMedia({ item, preview }: { item: PortfolioItem; preview: string }) {
-  const [mobileFallback, setMobileFallback] = useState(false);
+  const [mobileError, setMobileError] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -143,7 +138,7 @@ function DriveVideoMedia({ item, preview }: { item: PortfolioItem; preview: stri
       if (video.paused) await video.play();
       else video.pause();
     } catch {
-      setMobileFallback(true);
+      setMobileError(true);
     }
   };
 
@@ -165,7 +160,7 @@ function DriveVideoMedia({ item, preview }: { item: PortfolioItem; preview: stri
   };
 
   return (
-    <div className={"portfolio-drive-media" + (mobileFallback ? " mobile-fallback" : "")}>
+    <div className="portfolio-drive-media">
       {direct && (
         <div className="portfolio-mobile-video-shell">
           <video
@@ -175,14 +170,16 @@ function DriveVideoMedia({ item, preview }: { item: PortfolioItem; preview: stri
             poster={poster || undefined}
             playsInline
             preload="metadata"
+            controls={false}
             disablePictureInPicture
+            disableRemotePlayback
             onClick={togglePlay}
             onPlay={() => setPlaying(true)}
             onPause={() => setPlaying(false)}
             onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
             onLoadedMetadata={(event) => setDuration(event.currentTarget.duration || 0)}
             onDurationChange={(event) => setDuration(event.currentTarget.duration || 0)}
-            onError={() => setMobileFallback(true)}
+            onError={() => setMobileError(true)}
           />
           <div className="portfolio-mobile-video-controls">
             <button type="button" onClick={togglePlay} aria-label={playing ? "Pause video" : "Play video"}>
@@ -211,6 +208,7 @@ function DriveVideoMedia({ item, preview }: { item: PortfolioItem; preview: stri
               <Maximize2 size={17} />
             </button>
           </div>
+          {mobileError && <div className="portfolio-mobile-video-error">Video could not be loaded.</div>}
         </div>
       )}
       <iframe
