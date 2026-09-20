@@ -237,6 +237,7 @@ export default function PortfolioShowcase({
   const [activeFilter, setActiveFilter] = useState<FilterName>("All Work");
   const [selectedId, setSelectedId] = useState("");
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -280,6 +281,14 @@ export default function PortfolioShowcase({
     if (activeFilter === "All Work") return items;
     return items.filter((item) => resolveFilter(item) === activeFilter);
   }, [items, activeFilter]);
+
+  const initialVisibleCount = 16;
+  const visibleFiltered = expanded ? filtered : filtered.slice(0, initialVisibleCount);
+  const hasMore = filtered.length > initialVisibleCount;
+
+  useEffect(() => {
+    setExpanded(false);
+  }, [activeFilter]);
 
   const selected = items.find((item) => item.id === selectedId) || null;
   const selectedIndex = selected ? filtered.findIndex((item) => item.id === selected.id) : -1;
@@ -343,6 +352,23 @@ export default function PortfolioShowcase({
         })}
       </div>
 
+      {expanded && hasMore && (
+        <div className="portfolio-expand-bar portfolio-expand-top">
+          <span>Showing all {filtered.length} projects</span>
+          <button
+            type="button"
+            onClick={() => {
+              setExpanded(false);
+              requestAnimationFrame(() => {
+                document.getElementById("design")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              });
+            }}
+          >
+            See less
+          </button>
+        </div>
+      )}
+
       <AnimatePresence mode="wait">
         {filtered.length ? (
           <motion.div
@@ -353,7 +379,7 @@ export default function PortfolioShowcase({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.26 }}
           >
-            {filtered.map((item, index) => {
+            {visibleFiltered.map((item, index) => {
               const isVideo = item.type === "video" || Boolean(item.video_url || item.youtube_url);
               return (
                 <motion.article
@@ -382,6 +408,15 @@ export default function PortfolioShowcase({
           </motion.div>
         ) : null}
       </AnimatePresence>
+
+      {!expanded && hasMore && (
+        <div className="portfolio-expand-bar portfolio-expand-bottom">
+          <span>{Math.min(initialVisibleCount, filtered.length)} of {filtered.length} projects</span>
+          <button type="button" onClick={() => setExpanded(true)}>
+            Show more
+          </button>
+        </div>
+      )}
 
       <AnimatePresence>
         {open && selected && (
