@@ -217,7 +217,7 @@ export default function Home() {
               alt=""
               aria-hidden="true"
               fill
-              sizes="(max-width: 760px) 92vw, 440px"
+              sizes="(max-width: 760px) 100vw, (max-width: 1180px) 42vw, 520px"
               quality={72}
             />
           </div>
@@ -236,7 +236,7 @@ export default function Home() {
                 fill
                 priority
                 fetchPriority="high"
-                sizes="(max-width: 760px) 92vw, 440px"
+                sizes="(max-width: 760px) 100vw, (max-width: 1180px) 42vw, 520px"
                 quality={96}
               />
             </div>
