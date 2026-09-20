@@ -28,3 +28,17 @@ export async function POST(request: NextRequest) {
   const result = await callBackendEdge("create-project", token, body);
   return NextResponse.json(result.data, { status: result.status });
 }
+
+
+export async function DELETE(request: NextRequest) {
+  const token = request.cookies.get(ADMIN_COOKIE)?.value || null;
+  if (!token) return unauthorized();
+
+  const body = (await request.json().catch(() => null)) as { id?: string } | null;
+  if (!body?.id) {
+    return NextResponse.json({ error: "Project id is required." }, { status: 400 });
+  }
+
+  const result = await callBackendEdge("delete-project", token, { id: body.id });
+  return NextResponse.json(result.data, { status: result.status });
+}
