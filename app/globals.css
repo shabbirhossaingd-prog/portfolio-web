@@ -4332,6 +4332,7 @@ button, input, select, textarea { font: inherit; }
     border: 0;
     border-radius: 12px;
     background: #000;
+    pointer-events: none;
   }
 
   .portfolio-mobile-video-controls {
@@ -4379,6 +4380,13 @@ button, input, select, textarea { font: inherit; }
     font-variant-numeric: tabular-nums;
     text-align: center;
     white-space: nowrap;
+  }
+
+  .portfolio-mobile-video-error {
+    padding: 4px 2px 0;
+    color: rgba(255,255,255,.62);
+    font-size: 9px;
+    text-align: center;
   }
 
   .portfolio-drive-media.mobile-fallback .portfolio-mobile-video-shell {
