@@ -4040,3 +4040,127 @@ button, input, select, textarea { font: inherit; }
     filter: blur(22px) saturate(1) !important;
   }
 }
+
+
+/* Backend library + portfolio reveal controls */
+.admin-library {
+  max-height: 720px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-library .admin-recent-list {
+  overflow-y: auto;
+  padding-right: 3px;
+  scrollbar-width: thin;
+}
+
+.admin-library-row {
+  grid-template-columns: 52px minmax(0, 1fr) auto auto;
+}
+
+.admin-library-copy {
+  min-width: 0;
+}
+
+.admin-delete-project {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid #e3c7c7;
+  border-radius: 999px;
+  background: #fff7f7;
+  color: #9b2929;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 8px;
+  font-weight: 750;
+  transition: background .2s ease, color .2s ease, border-color .2s ease, transform .2s ease;
+}
+
+.admin-delete-project:hover:not(:disabled) {
+  background: #a62626;
+  border-color: #a62626;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.admin-delete-project:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+.portfolio-expand-bar {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: var(--muted);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.portfolio-expand-top {
+  justify-content: flex-end;
+  margin-top: 12px;
+  margin-bottom: -8px;
+}
+
+.portfolio-expand-bar button {
+  min-height: 38px;
+  padding: 0 15px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  transition: transform .2s ease, background .2s ease, color .2s ease;
+}
+
+.portfolio-expand-bar button:hover {
+  transform: translateY(-2px);
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.portfolio-expand-bottom {
+  padding-top: 4px;
+}
+
+@media (max-width: 760px) {
+  .admin-library {
+    max-height: 620px;
+  }
+
+  .admin-library-row {
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+  }
+
+  .admin-library-row > span.live,
+  .admin-library-row > span.draft {
+    display: none;
+  }
+
+  .admin-delete-project span {
+    display: none;
+  }
+
+  .admin-delete-project {
+    width: 34px;
+    padding: 0;
+  }
+
+  .portfolio-expand-top,
+  .portfolio-expand-bottom {
+    justify-content: space-between;
+  }
+}
