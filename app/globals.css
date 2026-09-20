@@ -3918,3 +3918,125 @@ button, input, select, textarea { font: inherit; }
 .theme-light .hero-portrait-blur {
   opacity: .11 !important;
 }
+
+
+/* Final homepage portrait fix: preserve real colour, no crop on desktop */
+.hero-portrait-stage {
+  width: min(520px, 40vw) !important;
+  height: 680px !important;
+  bottom: 0 !important;
+  overflow: visible !important;
+  isolation: isolate;
+}
+
+.hero-portrait-motion,
+.hero-portrait-transform,
+.hero-portrait-blur-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: visible !important;
+  transform-origin: center bottom;
+}
+
+.hero-portrait-main,
+.hero-portrait-blur {
+  width: 100% !important;
+  height: 100% !important;
+  inset: 0 !important;
+  left: 0 !important;
+  object-fit: contain !important;
+  object-position: center bottom !important;
+  image-rendering: auto;
+}
+
+.hero-portrait-main {
+  filter: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 91%,
+    rgba(0,0,0,.96) 95%,
+    rgba(0,0,0,.62) 98%,
+    transparent 100%
+  ) !important;
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 91%,
+    rgba(0,0,0,.96) 95%,
+    rgba(0,0,0,.62) 98%,
+    transparent 100%
+  ) !important;
+}
+
+.hero-portrait-blur {
+  opacity: .14 !important;
+  filter: blur(28px) saturate(1) !important;
+  transform: scale(1.045) !important;
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    rgba(0,0,0,.58) 28%,
+    rgba(0,0,0,.30) 58%,
+    transparent 82%
+  ) !important;
+  mask-image: radial-gradient(
+    ellipse at center,
+    rgba(0,0,0,.58) 28%,
+    rgba(0,0,0,.30) 58%,
+    transparent 82%
+  ) !important;
+}
+
+.theme-dark .hero-portrait-main,
+.theme-light .hero-portrait-main,
+.theme-dark .hero-portrait-blur,
+.theme-light .hero-portrait-blur {
+  filter: none !important;
+}
+
+.theme-dark .hero-portrait-blur,
+.theme-light .hero-portrait-blur {
+  filter: blur(28px) saturate(1) !important;
+}
+
+.portrait-edge-fade {
+  inset: -18px -34px -2px !important;
+  background:
+    linear-gradient(
+      0deg,
+      var(--bg) 0%,
+      color-mix(in srgb, var(--bg) 70%, transparent) 4%,
+      color-mix(in srgb, var(--bg) 26%, transparent) 10%,
+      transparent 18%
+    ) !important;
+  pointer-events: none;
+}
+
+@media (min-width: 761px) and (max-width: 1180px) {
+  .hero-portrait-stage {
+    width: min(470px, 42vw) !important;
+    height: 640px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero-portrait-stage {
+    width: min(430px, 100%) !important;
+    height: 520px !important;
+    bottom: 92px !important;
+  }
+
+  .hero-portrait-main,
+  .hero-portrait-blur {
+    width: 100% !important;
+    height: 100% !important;
+    left: 0 !important;
+  }
+
+  .hero-portrait-blur {
+    opacity: .10 !important;
+    filter: blur(22px) saturate(1) !important;
+  }
+}
