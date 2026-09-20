@@ -105,6 +105,51 @@ function driveThumb(url?: string | null, width = 900) {
   return "https://drive.google.com/thumbnail?id=" + id + "&sz=w" + width + (resourceKey ? "&resourcekey=" + encodeURIComponent(resourceKey) : "");
 }
 
+function driveDirectMedia(url?: string | null) {
+  const id = driveFileId(url);
+  if (!id) return null;
+  const resourceKey = driveResourceKey(url);
+  const params = new URLSearchParams({
+    id,
+    export: "download",
+    authuser: "0",
+    confirm: "t",
+  });
+  if (resourceKey) params.set("resourcekey", resourceKey);
+  return "https://drive.usercontent.google.com/download?" + params.toString();
+}
+
+function DriveVideoMedia({ item, preview }: { item: PortfolioItem; preview: string }) {
+  const [mobileFallback, setMobileFallback] = useState(false);
+  const direct = driveDirectMedia(item.source_url);
+  const poster = driveThumb(item.source_url, 1600);
+
+  return (
+    <div className={"portfolio-drive-media" + (mobileFallback ? " mobile-fallback" : "")}>
+      {direct && (
+        <video
+          className="portfolio-full-drive-mobile"
+          src={direct}
+          poster={poster || undefined}
+          controls
+          playsInline
+          preload="metadata"
+          controlsList="nodownload"
+          onError={() => setMobileFallback(true)}
+        />
+      )}
+      <iframe
+        className="portfolio-full-drive portfolio-full-drive-desktop"
+        src={preview}
+        title={item.title || "Portfolio video"}
+        loading="eager"
+        allow="autoplay; encrypted-media; picture-in-picture"
+        allowFullScreen
+      />
+    </div>
+  );
+}
+
 function isCompanyProfile(item: PortfolioItem) {
   return resolveFilter(item) === "Company Profiles";
 }
@@ -249,16 +294,7 @@ function FullMedia({ item }: { item: PortfolioItem }) {
 
     const preview = drivePreview(item.source_url);
     if (preview) {
-      return (
-        <iframe
-          className="portfolio-full-drive"
-          src={preview}
-          title={item.title || "Portfolio video"}
-          loading="eager"
-          allow="autoplay; encrypted-media; picture-in-picture"
-          allowFullScreen
-        />
-      );
+      return <DriveVideoMedia item={item} preview={preview} />;
     }
   }
 
