@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import HomeClient from "@/components/HomeClient";
 import { defaultSiteContent, type SiteContent } from "@/lib/site-content";
 
@@ -47,5 +48,9 @@ async function getInitialSiteContent(): Promise<SiteContent> {
 
 export default async function Home() {
   const initialSiteContent = await getInitialSiteContent();
-  return <HomeClient initialSiteContent={initialSiteContent} />;
+  const cookieStore = await cookies();
+  const savedTheme = cookieStore.get("portfolio-theme")?.value;
+  const initialTheme = savedTheme === "dark" ? "dark" : "light";
+
+  return <HomeClient initialSiteContent={initialSiteContent} initialTheme={initialTheme} />;
 }
