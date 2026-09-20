@@ -102,6 +102,7 @@ export default function BackendPage() {
 
   const videoExtensions = new Set(["mp4", "webm", "mov", "m4v", "ogg", "ogv"]);
   const imageExtensions = new Set(["jpg", "jpeg", "png", "webp", "gif", "avif"]);
+  const pdfExtensions = new Set(["pdf"]);
 
   function extensionOf(name: string) {
     return name.split(".").pop()?.toLowerCase() || "";
@@ -113,6 +114,10 @@ export default function BackendPage() {
 
   function isSupportedImage(file: File) {
     return file.type.startsWith("image/") || imageExtensions.has(extensionOf(file.name));
+  }
+
+  function isSupportedPdf(file: File) {
+    return file.type === "application/pdf" || pdfExtensions.has(extensionOf(file.name));
   }
 
   function inferredContentType(file: File) {
@@ -132,6 +137,7 @@ export default function BackendPage() {
       webp: "image/webp",
       gif: "image/gif",
       avif: "image/avif",
+      pdf: "application/pdf",
     };
 
     return types[extension] || "application/octet-stream";
@@ -337,6 +343,7 @@ export default function BackendPage() {
     }
 
     const shouldBeVideo = selectedFolder.kind === "video";
+    const shouldBeCompanyProfile = folder === "Company Profiles";
 
     if (file) {
       if (!browserSupabase) {
@@ -349,7 +356,12 @@ export default function BackendPage() {
         return;
       }
 
-      if (!shouldBeVideo && !isSupportedImage(file)) {
+      if (!shouldBeVideo && shouldBeCompanyProfile && !isSupportedImage(file) && !isSupportedPdf(file)) {
+        setStatus("Unsupported company profile file. Use PDF, JPG, PNG, WebP, GIF or AVIF.");
+        return;
+      }
+
+      if (!shouldBeVideo && !shouldBeCompanyProfile && !isSupportedImage(file)) {
         setStatus("Unsupported image. Use JPG, PNG, WebP, GIF or AVIF.");
         return;
       }
@@ -632,24 +644,32 @@ export default function BackendPage() {
                   />
                 </label>
                 <small>
-                  Google Drive, YouTube, direct image/video URLs are shown inside your website. Drive files must be shared as “Anyone with the link”.
+                  {folder === "Company Profiles"
+                    ? "For Company Profiles, upload a PDF or paste a Google Drive PDF link. The cover page shows in the portfolio, and clicking it opens the full scrollable document. Drive files must be shared as “Anyone with the link”."
+                    : "Google Drive, YouTube, direct image/video URLs are shown inside your website. Drive files must be shared as “Anyone with the link”."}
                 </small>
               </div>
 
               <label className="upload-box admin-real-upload">
                 <Upload size={22} />
-                <strong>{file ? file.name : selectedFolder.kind === "video" ? "Choose original video" : "Choose original artwork"}</strong>
+                <strong>{file ? file.name : selectedFolder.kind === "video" ? "Choose original video" : folder === "Company Profiles" ? "Choose company profile PDF or cover" : "Choose original artwork"}</strong>
                 <span>
                   {file
                     ? Math.max(0.01, file.size / 1024 / 1024).toFixed(2) + " MB · original ratio kept"
                     : selectedFolder.kind === "video"
                       ? "MP4 / WebM / MOV / M4V / OGG — original ratio kept"
-                      : "JPG / PNG / WebP / GIF / AVIF — no forced crop"}
+                      : folder === "Company Profiles"
+                        ? "PDF / JPG / PNG / WebP / GIF / AVIF — PDF opens as a scrollable document"
+                        : "JPG / PNG / WebP / GIF / AVIF — no forced crop"}
                 </span>
                 <span className="upload-choose">Choose file</span>
                 <input
                   type="file"
-                  accept={selectedFolder.kind === "video" ? "video/*,.mp4,.webm,.mov,.m4v,.ogg,.ogv" : "image/*,.jpg,.jpeg,.png,.webp,.gif,.avif"}
+                  accept={selectedFolder.kind === "video"
+                    ? "video/*,.mp4,.webm,.mov,.m4v,.ogg,.ogv"
+                    : folder === "Company Profiles"
+                      ? "application/pdf,.pdf,image/*,.jpg,.jpeg,.png,.webp,.gif,.avif"
+                      : "image/*,.jpg,.jpeg,.png,.webp,.gif,.avif"}
                   onChange={(event) => {
                     const nextFile = event.target.files?.[0] || null;
                     setFile(nextFile);
@@ -688,6 +708,11 @@ export default function BackendPage() {
                 {previewUrl ? (
                   selectedFolder.kind === "video" ? (
                     <video src={previewUrl} controls muted playsInline />
+                  ) : folder === "Company Profiles" && file && isSupportedPdf(file) ? (
+                    <iframe
+                      src={previewUrl + "#page=1&toolbar=0&navpanes=0&view=FitH"}
+                      title="Company profile PDF preview"
+                    />
                   ) : (
                     <img src={previewUrl} alt="Upload preview" />
                   )
