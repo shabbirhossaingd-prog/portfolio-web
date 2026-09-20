@@ -105,6 +105,28 @@ function driveThumb(url?: string | null) {
   return "https://drive.google.com/thumbnail?id=" + id + "&sz=w2000" + (resourceKey ? "&resourcekey=" + encodeURIComponent(resourceKey) : "");
 }
 
+function isCompanyProfile(item: PortfolioItem) {
+  return resolveFilter(item) === "Company Profiles";
+}
+
+function isPdfUrl(url?: string | null) {
+  if (!url) return false;
+  try {
+    return /\.pdf$/i.test(new URL(url).pathname);
+  } catch {
+    return /\.pdf(?:$|[?#])/i.test(url);
+  }
+}
+
+function pdfCoverUrl(url: string) {
+  const joiner = url.includes("#") ? "&" : "#";
+  return url + joiner + "page=1&toolbar=0&navpanes=0&scrollbar=0&view=FitH";
+}
+
+function pdfViewerUrl(url: string) {
+  return "https://docs.google.com/gview?embedded=1&url=" + encodeURIComponent(url);
+}
+
 function itemCover(item: PortfolioItem) {
   if (item.source_kind === "drive") return driveThumb(item.source_url);
   if (item.source_kind === "youtube") return youtubeThumb(item.source_url || item.youtube_url);
@@ -114,6 +136,20 @@ function itemCover(item: PortfolioItem) {
 function PinMedia({ item, index }: { item: PortfolioItem; index: number }) {
   const cover = itemCover(item);
   const category = resolveFilter(item);
+  const documentUrl = item.source_url || item.cover_url || item.gallery_urls?.[0] || null;
+
+  if (isCompanyProfile(item) && documentUrl && isPdfUrl(documentUrl) && item.source_kind !== "drive") {
+    return (
+      <div className="portfolio-profile-cover" aria-hidden="true">
+        <iframe
+          src={pdfCoverUrl(documentUrl)}
+          title=""
+          loading="lazy"
+          tabIndex={-1}
+        />
+      </div>
+    );
+  }
 
   if (item.video_url && !item.cover_url) {
     return (
@@ -149,6 +185,51 @@ function PinMedia({ item, index }: { item: PortfolioItem; index: number }) {
 
 function FullMedia({ item }: { item: PortfolioItem }) {
   const videoId = youtubeId(item.source_url || item.youtube_url);
+  const documentUrl = item.source_url || item.cover_url || item.gallery_urls?.[0] || null;
+
+  if (isCompanyProfile(item) && documentUrl) {
+    if (item.source_kind === "drive") {
+      const preview = drivePreview(documentUrl);
+      if (preview) {
+        return (
+          <iframe
+            className="portfolio-full-profile"
+            src={preview}
+            title={item.title || "Company profile"}
+            allow="autoplay"
+            allowFullScreen
+          />
+        );
+      }
+    }
+
+    if (isPdfUrl(documentUrl)) {
+      return (
+        <iframe
+          className="portfolio-full-profile"
+          src={pdfViewerUrl(documentUrl)}
+          title={item.title || "Company profile PDF"}
+          allowFullScreen
+        />
+      );
+    }
+
+    if ((item.gallery_urls?.length || 0) > 1) {
+      return (
+        <div className="portfolio-profile-pages" aria-label={item.title || "Company profile pages"}>
+          {item.gallery_urls!.map((url, pageIndex) => (
+            <img
+              key={url + pageIndex}
+              src={url}
+              alt={(item.title || "Company profile") + " page " + (pageIndex + 1)}
+              loading={pageIndex < 2 ? "eager" : "lazy"}
+              decoding="async"
+            />
+          ))}
+        </div>
+      );
+    }
+  }
 
   if (item.source_kind === "drive" && item.source_url) {
     if (item.type === "design") {
