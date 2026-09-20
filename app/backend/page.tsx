@@ -15,6 +15,7 @@ import {
   Plus,
   Upload,
   Video,
+  Trash2,
 } from "lucide-react";
 
 type FolderLabel = "Posters" | "Reels" | "Videos" | "AI Video" | "Logos" | "Company Profiles" | "Animations";
@@ -75,6 +76,7 @@ export default function BackendPage() {
   const [publishBusy, setPublishBusy] = useState(false);
   const [status, setStatus] = useState("");
   const [projects, setProjects] = useState<ProjectRow[]>([]);
+  const [deletingId, setDeletingId] = useState("");
 
   const linkedDriveFolder = linkUrl.trim() ? isDriveFolderUrl(linkUrl.trim()) : false;
   const linkedPreview = linkUrl.trim() && !linkedDriveFolder ? normalizedPreviewUrl(linkUrl.trim()) : "";
@@ -91,6 +93,12 @@ export default function BackendPage() {
     if (activePanel === "video") return folders.filter((item) => item.kind === "video");
     return folders;
   }, [activePanel]);
+
+  const visibleProjects = useMemo(() => {
+    if (activePanel === "visual") return projects.filter((project) => project.type === "design");
+    if (activePanel === "video") return projects.filter((project) => project.type === "video");
+    return projects;
+  }, [projects, activePanel]);
 
   const videoExtensions = new Set(["mp4", "webm", "mov", "m4v", "ogg", "ogv"]);
   const imageExtensions = new Set(["jpg", "jpeg", "png", "webp", "gif", "avif"]);
@@ -284,6 +292,32 @@ export default function BackendPage() {
     if (!response.ok) return;
     const data = await response.json();
     setProjects(data.projects || []);
+  }
+
+  async function deleteProject(project: ProjectRow) {
+    const label = project.title?.trim() || project.category || "this item";
+    if (!window.confirm(`Delete “${label}” from the portfolio? This cannot be undone.`)) return;
+
+    setDeletingId(project.id);
+    setStatus("");
+
+    try {
+      const response = await fetch("/api/backend/projects", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: project.id }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Could not delete project.");
+
+      setProjects((current) => current.filter((item) => item.id !== project.id));
+      setStatus("Project deleted successfully.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Delete failed.");
+    } finally {
+      setDeletingId("");
+    }
   }
 
   function resetForm() {
@@ -689,15 +723,15 @@ export default function BackendPage() {
               </div>
             </div>
 
-            <div className="admin-recent">
+            <div className="admin-recent admin-library">
               <div className="admin-preview-head">
-                <span>Recent uploads</span>
-                <span>{projects.length}</span>
+                <span>{activePanel === "video" ? "All uploaded videos" : "All uploaded visual work"}</span>
+                <span>{visibleProjects.length}</span>
               </div>
 
               <div className="admin-recent-list">
-                {projects.length ? projects.slice(0, 8).map((project) => (
-                  <div className="admin-recent-row" key={project.id}>
+                {visibleProjects.length ? visibleProjects.map((project) => (
+                  <div className="admin-recent-row admin-library-row" key={project.id}>
                     <div className="admin-recent-thumb">
                       {project.cover_url ? (
                         <img src={project.cover_url} alt="" />
@@ -709,16 +743,34 @@ export default function BackendPage() {
                         <video src={project.video_url} muted preload="metadata" />
                       ) : null}
                     </div>
-                    <div>
-                      <strong>{project.title}</strong>
-                      <span>{project.category} · {project.year || "—"}</span>
+
+                    <div className="admin-library-copy">
+                      <strong>{project.title?.trim() || project.category}</strong>
+                      <span>{project.category}{project.year ? " · " + project.year : ""}</span>
                     </div>
-                    <span className={project.published ? "live" : "draft"}>{project.published ? "Live" : "Draft"}</span>
+
+                    <span className={project.published ? "live" : "draft"}>
+                      {project.published ? "Live" : "Draft"}
+                    </span>
+
+                    <button
+                      type="button"
+                      className="admin-delete-project"
+                      onClick={() => deleteProject(project)}
+                      disabled={deletingId === project.id}
+                      aria-label={"Delete " + (project.title?.trim() || project.category)}
+                    >
+                      {deletingId === project.id ? <LoaderCircle className="spin" size={15} /> : <Trash2 size={15} />}
+                      <span>{deletingId === project.id ? "Deleting" : "Delete"}</span>
+                    </button>
                   </div>
                 )) : (
-                  <div className="admin-recent-empty">No uploads yet.</div>
+                  <div className="admin-recent-empty">
+                    {activePanel === "video" ? "No videos uploaded yet." : "No visual work uploaded yet."}
+                  </div>
                 )}
               </div>
+            </div>
             </div>
           </div>
         </div>
