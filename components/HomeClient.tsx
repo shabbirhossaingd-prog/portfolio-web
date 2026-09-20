@@ -51,8 +51,8 @@ function Tip({ children, text, className = "" }: { children: ReactNode; text: st
   return <span className={"hover-tip " + className} data-tip={text}>{children}</span>;
 }
 
-export default function HomeClient({ initialSiteContent }: { initialSiteContent: SiteContent }) {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+export default function HomeClient({ initialSiteContent, initialTheme }: { initialSiteContent: SiteContent; initialTheme: "light" | "dark" }) {
+  const [theme, setTheme] = useState<"light" | "dark">(initialTheme);
   const [siteContent, setSiteContent] = useState<SiteContent>(initialSiteContent);
   const [heroPreviewFrame, setHeroPreviewFrame] = useState<{
     mode: "light" | "dark";
@@ -121,14 +121,20 @@ export default function HomeClient({ initialSiteContent }: { initialSiteContent:
     const saved = window.localStorage.getItem("portfolio-theme");
     if (saved === "dark" || saved === "light") {
       setTheme(saved);
+      document.cookie = "portfolio-theme=" + saved + "; path=/; max-age=31536000; samesite=lax";
       return;
     }
-    setTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+
+    const preferred = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    setTheme(preferred);
+    window.localStorage.setItem("portfolio-theme", preferred);
+    document.cookie = "portfolio-theme=" + preferred + "; path=/; max-age=31536000; samesite=lax";
   }, []);
 
   const changeTheme = (value: "light" | "dark") => {
     setTheme(value);
     window.localStorage.setItem("portfolio-theme", value);
+    document.cookie = "portfolio-theme=" + value + "; path=/; max-age=31536000; samesite=lax";
   };
 
   useEffect(() => {
