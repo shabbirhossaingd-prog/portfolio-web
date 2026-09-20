@@ -564,13 +564,13 @@ export default function BackendPage() {
               <strong>{activePanel === "video" ? "Video work" : "Visual work"} mode.</strong>{" "}
               {activePanel === "video"
                 ? "Add Reels, Videos, AI Video or Animations using an upload or pasted Drive / YouTube / direct link."
-                : "Add Posters, Logos or Company Profiles using an upload or pasted Drive / direct image link."}
+                : "Add Posters, Logos or Company Profiles. Company Profiles can be uploaded as PDF or pasted as a Drive PDF link."}
             </div>
         <div className="admin-layout" ref={uploadPanelRef}>
           <div className="admin-panel">
             <div className="admin-panel-title">
               <h2>Add portfolio item</h2>
-              <span>{selectedFolder.kind === "video" ? "Video" : "Image"}</span>
+              <span>{selectedFolder.kind === "video" ? "Video" : folder === "Company Profiles" ? "PDF / Image" : "Image"}</span>
             </div>
 
             <div className="admin-folder-grid" aria-label="Upload folder">
