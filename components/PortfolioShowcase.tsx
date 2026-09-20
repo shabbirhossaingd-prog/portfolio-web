@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
-import { ArrowLeft, ArrowRight, Maximize2, Play, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Maximize2, Pause, Play, Volume2, VolumeX, X } from "lucide-react";
 
 type FilterName = "All Work" | "Posters" | "Reels" | "Videos" | "AI Video" | "Logos" | "Company Profiles" | "Animations";
 
@@ -121,22 +121,97 @@ function driveDirectMedia(url?: string | null) {
 
 function DriveVideoMedia({ item, preview }: { item: PortfolioItem; preview: string }) {
   const [mobileFallback, setMobileFallback] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const direct = driveDirectMedia(item.source_url);
   const poster = driveThumb(item.source_url, 1600);
+
+  const formatTime = (value: number) => {
+    if (!Number.isFinite(value) || value < 0) return "0:00";
+    const minutes = Math.floor(value / 60);
+    const seconds = Math.floor(value % 60);
+    return minutes + ":" + String(seconds).padStart(2, "0");
+  };
+
+  const togglePlay = async () => {
+    const video = videoRef.current;
+    if (!video) return;
+    try {
+      if (video.paused) await video.play();
+      else video.pause();
+    } catch {
+      setMobileFallback(true);
+    }
+  };
+
+  const toggleMute = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = !video.muted;
+    setMuted(video.muted);
+  };
+
+  const enterFullscreen = () => {
+    const video = videoRef.current as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null;
+    if (!video) return;
+    if (video.webkitEnterFullscreen) {
+      video.webkitEnterFullscreen();
+      return;
+    }
+    video.requestFullscreen?.();
+  };
 
   return (
     <div className={"portfolio-drive-media" + (mobileFallback ? " mobile-fallback" : "")}>
       {direct && (
-        <video
-          className="portfolio-full-drive-mobile"
-          src={direct}
-          poster={poster || undefined}
-          controls
-          playsInline
-          preload="metadata"
-          controlsList="nodownload"
-          onError={() => setMobileFallback(true)}
-        />
+        <div className="portfolio-mobile-video-shell">
+          <video
+            ref={videoRef}
+            className="portfolio-full-drive-mobile"
+            src={direct}
+            poster={poster || undefined}
+            playsInline
+            preload="metadata"
+            disablePictureInPicture
+            onClick={togglePlay}
+            onPlay={() => setPlaying(true)}
+            onPause={() => setPlaying(false)}
+            onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
+            onLoadedMetadata={(event) => setDuration(event.currentTarget.duration || 0)}
+            onDurationChange={(event) => setDuration(event.currentTarget.duration || 0)}
+            onError={() => setMobileFallback(true)}
+          />
+          <div className="portfolio-mobile-video-controls">
+            <button type="button" onClick={togglePlay} aria-label={playing ? "Pause video" : "Play video"}>
+              {playing ? <Pause size={17} fill="currentColor" /> : <Play size={17} fill="currentColor" />}
+            </button>
+            <input
+              type="range"
+              min="0"
+              max={Math.max(duration, 0)}
+              step="0.1"
+              value={Math.min(currentTime, duration || currentTime)}
+              onChange={(event) => {
+                const video = videoRef.current;
+                if (!video) return;
+                const next = Number(event.target.value);
+                video.currentTime = next;
+                setCurrentTime(next);
+              }}
+              aria-label="Video progress"
+            />
+            <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+            <button type="button" onClick={toggleMute} aria-label={muted ? "Unmute video" : "Mute video"}>
+              {muted ? <VolumeX size={17} /> : <Volume2 size={17} />}
+            </button>
+            <button type="button" onClick={enterFullscreen} aria-label="Fullscreen video">
+              <Maximize2 size={17} />
+            </button>
+          </div>
+        </div>
       )}
       <iframe
         className="portfolio-full-drive portfolio-full-drive-desktop"
