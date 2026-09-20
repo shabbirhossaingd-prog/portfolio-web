@@ -771,7 +771,6 @@ export default function BackendPage() {
                 )}
               </div>
             </div>
-            </div>
           </div>
         </div>
 
