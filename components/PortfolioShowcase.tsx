@@ -98,11 +98,11 @@ function drivePreview(url?: string | null) {
   return "https://drive.google.com/file/d/" + id + "/preview" + (resourceKey ? "?resourcekey=" + encodeURIComponent(resourceKey) : "");
 }
 
-function driveThumb(url?: string | null) {
+function driveThumb(url?: string | null, width = 900) {
   const id = driveFileId(url);
   if (!id) return null;
   const resourceKey = driveResourceKey(url);
-  return "https://drive.google.com/thumbnail?id=" + id + "&sz=w2000" + (resourceKey ? "&resourcekey=" + encodeURIComponent(resourceKey) : "");
+  return "https://drive.google.com/thumbnail?id=" + id + "&sz=w" + width + (resourceKey ? "&resourcekey=" + encodeURIComponent(resourceKey) : "");
 }
 
 function isCompanyProfile(item: PortfolioItem) {
@@ -128,7 +128,7 @@ function pdfViewerUrl(url: string) {
 }
 
 function itemCover(item: PortfolioItem) {
-  if (item.source_kind === "drive") return driveThumb(item.source_url);
+  if (item.source_kind === "drive") return driveThumb(item.source_url, 900);
   if (item.source_kind === "youtube") return youtubeThumb(item.source_url || item.youtube_url);
   return item.cover_url || item.gallery_urls?.[0] || youtubeThumb(item.youtube_url) || null;
 }
@@ -168,9 +168,9 @@ function PinMedia({ item, index }: { item: PortfolioItem; index: number }) {
       <img
         src={cover}
         alt={item.title || category}
-        loading="lazy"
+        loading={index < 4 ? "eager" : "lazy"}
         decoding="async"
-        fetchPriority="low"
+        fetchPriority={index < 4 ? "high" : "low"}
       />
     );
   }
@@ -233,7 +233,7 @@ function FullMedia({ item }: { item: PortfolioItem }) {
 
   if (item.source_kind === "drive" && item.source_url) {
     if (item.type === "design") {
-      const image = driveThumb(item.source_url);
+      const image = driveThumb(item.source_url, 2000);
       if (image) {
         return (
           <img
@@ -254,6 +254,7 @@ function FullMedia({ item }: { item: PortfolioItem }) {
           className="portfolio-full-drive"
           src={preview}
           title={item.title || "Portfolio video"}
+          loading="eager"
           allow="autoplay; encrypted-media; picture-in-picture"
           allowFullScreen
         />
@@ -319,6 +320,29 @@ export default function PortfolioShowcase({
   const [selectedId, setSelectedId] = useState("");
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    const origins = [
+      "https://drive.google.com",
+      "https://drive.usercontent.google.com",
+      "https://lh3.googleusercontent.com",
+    ];
+
+    const links = origins.map((href) => {
+      const existing = document.head.querySelector(`link[rel="preconnect"][href="${href}"]`);
+      if (existing) return null;
+      const link = document.createElement("link");
+      link.rel = "preconnect";
+      link.href = href;
+      link.crossOrigin = "anonymous";
+      document.head.appendChild(link);
+      return link;
+    });
+
+    return () => {
+      links.forEach((link) => link?.remove());
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
